@@ -1,7 +1,4 @@
-// ===========================================
-// Authentication Slice
-// ===========================================
-// Manages user authentication state
+// Auth Slice - manages user authentication state
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../services/api';
@@ -182,7 +179,6 @@ const authSlice = createSlice({
             })
             .addCase(joinOrganization.fulfilled, (state, action) => {
                 state.isLoading = false;
-                // Update user status to pending
                 if (state.user) {
                     state.user.status = 'pending';
                     localStorage.setItem('user', JSON.stringify(state.user));
@@ -194,12 +190,13 @@ const authSlice = createSlice({
             })
             // Get Current User
             .addCase(getCurrentUser.pending, (state) => {
-                state.isLoading = true;
+                state.error = null;
             })
             .addCase(getCurrentUser.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.user = action.payload.data.user;
                 state.organization = action.payload.data.organization;
+                state.isAuthenticated = true;
                 localStorage.setItem('user', JSON.stringify(action.payload.data.user));
             })
             .addCase(getCurrentUser.rejected, (state, action) => {

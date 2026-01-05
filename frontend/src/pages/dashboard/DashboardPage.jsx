@@ -1,9 +1,6 @@
-// ===========================================
-// Dashboard Page
-// ===========================================
-// Main dashboard with role-specific content
+// Dashboard Page - main dashboard with role-specific content
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchProjects } from '../../store/projectSlice';
@@ -44,18 +41,38 @@ function DashboardPage() {
     const [recentActivity, setRecentActivity] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
 
-    useEffect(() => {
-        // Fetch projects
+    const refreshDashboardData = useCallback(async () => {
         dispatch(fetchProjects());
-
-        // Fetch my tasks for employees
         if (user?.role === 'employee') {
             dispatch(fetchMyTasks());
         }
-
-        // Fetch additional stats based on role
-        fetchStats();
+        await fetchStats();
     }, [dispatch, user]);
+
+    useEffect(() => {
+        refreshDashboardData();
+    }, [refreshDashboardData]);
+
+    // Refetch data when window gains focus
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                refreshDashboardData();
+            }
+        };
+
+        const handleFocus = () => {
+            refreshDashboardData();
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, [refreshDashboardData]);
 
     const fetchStats = async () => {
         try {

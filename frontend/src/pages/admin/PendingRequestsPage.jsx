@@ -1,10 +1,9 @@
-// ===========================================
-// Pending Requests Page (Admin Only)
-// ===========================================
+// Pending Requests Page - Admin only, shows users pending approval
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { showToast } from '../../store/uiSlice';
+import { useRefreshOnFocus } from '../../hooks/useRefreshOnFocus';
 import api from '../../services/api';
 import Avatar from '../../components/ui/Avatar';
 import Button from '../../components/ui/Button';
@@ -18,11 +17,7 @@ function PendingRequestsPage() {
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState(null);
 
-    useEffect(() => {
-        fetchPendingRequests();
-    }, []);
-
-    const fetchPendingRequests = async () => {
+    const fetchPendingRequests = useCallback(async () => {
         try {
             const res = await api.get('/users/pending');
             setRequests(res.data.data);
@@ -31,7 +26,13 @@ function PendingRequestsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchPendingRequests();
+    }, [fetchPendingRequests]);
+
+    useRefreshOnFocus(fetchPendingRequests);
 
     const handleApprove = async (userId, userName) => {
         setProcessingId(userId);

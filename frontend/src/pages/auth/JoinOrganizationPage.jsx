@@ -1,8 +1,6 @@
-// ===========================================
-// Join Organization Page
-// ===========================================
+// Join Organization Page - for users to enter org code and wait for approval
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { joinOrganization, clearError, getCurrentUser } from '../../store/authSlice';
@@ -17,40 +15,49 @@ function JoinOrganizationPage() {
     const [joinCode, setJoinCode] = useState('');
     const [submitted, setSubmitted] = useState(false);
 
-    // Check if user already has an organization and is pending
+    const checkAndRedirect = useCallback(() => {
+        if (user?.status === 'approved' && user?.organization_id) {
+            navigate('/dashboard', { replace: true });
+            return true;
+        }
+        return false;
+    }, [user, navigate]);
+
     useEffect(() => {
+        if (checkAndRedirect()) return;
         if (user?.organization_id && user?.status === 'pending') {
             setSubmitted(true);
         }
-        // If user is approved, redirect to dashboard
-        if (user?.status === 'approved') {
-            navigate('/dashboard');
-        }
-    }, [user, navigate]);
+    }, [user, checkAndRedirect]);
 
-    // Poll for approval status every 5 seconds when pending
+    // Poll for approval status every 5 seconds
     useEffect(() => {
-        if (submitted) {
-            const interval = setInterval(() => {
-                dispatch(getCurrentUser());
-            }, 5000);
+        if (!submitted) return;
 
-            return () => clearInterval(interval);
-        }
-    }, [submitted, dispatch]);
+        const interval = setInterval(async () => {
+            const result = await dispatch(getCurrentUser());
+            if (result.payload?.data?.user?.status === 'approved') {
+                clearInterval(interval);
+                navigate('/dashboard', { replace: true });
+            }
+        }, 5000);
 
-    // Clear errors on unmount
+        dispatch(getCurrentUser());
+        return () => clearInterval(interval);
+    }, [submitted, dispatch, navigate]);
+
     useEffect(() => {
-        return () => {
-            dispatch(clearError());
-        };
+        return () => { dispatch(clearError()); };
     }, [dispatch]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = await dispatch(joinOrganization(joinCode));
+        if (!joinCode.trim()) return;
+
+        const result = await dispatch(joinOrganization(joinCode.trim()));
         if (!result.error) {
             setSubmitted(true);
+            dispatch(getCurrentUser());
         }
     };
 

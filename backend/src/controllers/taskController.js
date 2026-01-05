@@ -1,10 +1,51 @@
-// ===========================================
-// Task Controller
-// ===========================================
-// Handles task CRUD operations and status updates
+// Task Controller - handles task CRUD with multiple assignees support
 
 const db = require('../config/db');
 const { isEmpty } = require('../utils/helpers');
+
+// Get assignees for a task
+async function getTaskAssignees(taskId) {
+    const result = await db.query(
+        `SELECT u.id, u.first_name, u.last_name, u.email, u.role
+         FROM task_assignees ta
+         JOIN users u ON ta.user_id = u.id
+         WHERE ta.task_id = $1
+         ORDER BY ta.assigned_at ASC`,
+        [taskId]
+    );
+    return result.rows;
+}
+
+// Set assignees for a task (replaces existing)
+async function setTaskAssignees(taskId, assigneeIds, projectId) {
+    // Validate assignees are project members
+    if (assigneeIds && assigneeIds.length > 0) {
+        const memberCheck = await db.query(
+            `SELECT user_id FROM project_members 
+             WHERE project_id = $1 AND user_id = ANY($2::uuid[])`,
+            [projectId, assigneeIds]
+        );
+        
+        if (memberCheck.rows.length !== assigneeIds.length) {
+            throw new Error('One or more assigned users are not members of this project.');
+        }
+    }
+
+    // Remove existing assignees
+    await db.query('DELETE FROM task_assignees WHERE task_id = $1', [taskId]);
+
+    // Add new assignees
+    if (assigneeIds && assigneeIds.length > 0) {
+        const values = assigneeIds.map((userId, index) => 
+            `($1, $${index + 2})`
+        ).join(', ');
+        
+        await db.query(
+            `INSERT INTO task_assignees (task_id, user_id) VALUES ${values}`,
+            [taskId, ...assigneeIds]
+        );
+    }
+}
 
 /**
  * Get all tasks for a project
@@ -47,21 +88,26 @@ async function getProjectTasks(req, res) {
         // Build query
         let query = `
       SELECT t.*, 
-             u.first_name as assignee_first_name, 
-             u.last_name as assignee_last_name,
              c.first_name as creator_first_name,
              c.last_name as creator_last_name
       FROM tasks t
-      LEFT JOIN users u ON t.assigned_to = u.id
       LEFT JOIN users c ON t.created_by = c.id
       WHERE t.project_id = $1
     `;
         const params = [projectId];
 
-        // For employees, only show their tasks
+        // For employees, only show tasks they're assigned to
         if (role === 'employee') {
+            query = `
+        SELECT DISTINCT t.*, 
+               c.first_name as creator_first_name,
+               c.last_name as creator_last_name
+        FROM tasks t
+        LEFT JOIN users c ON t.created_by = c.id
+        LEFT JOIN task_assignees ta ON t.id = ta.task_id
+        WHERE t.project_id = $1 AND (ta.user_id = $2 OR ta.user_id IS NULL)
+      `;
             params.push(userId);
-            query += ` AND (t.assigned_to = $${params.length} OR t.assigned_to IS NULL)`;
         }
 
         // Filter by status if provided
@@ -73,16 +119,24 @@ async function getProjectTasks(req, res) {
         // Filter by assigned user if provided (admin/manager only)
         if (assignedTo && role !== 'employee') {
             params.push(assignedTo);
-            query += ` AND t.assigned_to = $${params.length}`;
+            query += ` AND EXISTS (SELECT 1 FROM task_assignees ta2 WHERE ta2.task_id = t.id AND ta2.user_id = $${params.length})`;
         }
 
         query += ' ORDER BY t.created_at DESC';
 
         const result = await db.query(query, params);
 
+        // Fetch assignees for each task
+        const tasksWithAssignees = await Promise.all(
+            result.rows.map(async (task) => {
+                const assignees = await getTaskAssignees(task.id);
+                return { ...task, assignees };
+            })
+        );
+
         res.json({
             success: true,
-            data: result.rows
+            data: tasksWithAssignees
         });
 
     } catch (error) {
@@ -97,6 +151,7 @@ async function getProjectTasks(req, res) {
 /**
  * Get tasks assigned to the current user
  * GET /api/tasks/my-tasks
+ * Uses task_assignees junction table to find user's tasks
  */
 async function getMyTasks(req, res) {
     try {
@@ -104,14 +159,15 @@ async function getMyTasks(req, res) {
         const { status, projectId } = req.query;
 
         let query = `
-      SELECT t.*, 
+      SELECT DISTINCT t.*, 
              p.name as project_name,
              c.first_name as creator_first_name,
              c.last_name as creator_last_name
       FROM tasks t
       JOIN projects p ON t.project_id = p.id
+      JOIN task_assignees ta ON t.id = ta.task_id
       LEFT JOIN users c ON t.created_by = c.id
-      WHERE t.assigned_to = $1 AND p.organization_id = $2
+      WHERE ta.user_id = $1 AND p.organization_id = $2
     `;
         const params = [userId, organization_id];
 
@@ -131,9 +187,17 @@ async function getMyTasks(req, res) {
 
         const result = await db.query(query, params);
 
+        // Fetch all assignees for each task
+        const tasksWithAssignees = await Promise.all(
+            result.rows.map(async (task) => {
+                const assignees = await getTaskAssignees(task.id);
+                return { ...task, assignees };
+            })
+        );
+
         res.json({
             success: true,
-            data: result.rows
+            data: tasksWithAssignees
         });
 
     } catch (error) {
@@ -157,13 +221,10 @@ async function getTaskById(req, res) {
         const result = await db.query(
             `SELECT t.*, 
               p.name as project_name,
-              u.first_name as assignee_first_name, 
-              u.last_name as assignee_last_name,
               c.first_name as creator_first_name,
               c.last_name as creator_last_name
        FROM tasks t
        JOIN projects p ON t.project_id = p.id
-       LEFT JOIN users u ON t.assigned_to = u.id
        LEFT JOIN users c ON t.created_by = c.id
        WHERE t.id = $1 AND p.organization_id = $2`,
             [id, organization_id]
@@ -177,6 +238,10 @@ async function getTaskById(req, res) {
         }
 
         const task = result.rows[0];
+        
+        // Get all assignees for this task
+        const assignees = await getTaskAssignees(task.id);
+        task.assignees = assignees;
 
         // For employees, verify they're assigned to this task or are a project member
         if (role === 'employee') {
@@ -192,8 +257,9 @@ async function getTaskById(req, res) {
                 });
             }
 
-            // Employees can only see their own tasks
-            if (task.assigned_to !== userId && task.assigned_to !== null) {
+            // Check if user is assigned to this task
+            const isAssigned = assignees.some(a => a.id === userId);
+            if (!isAssigned && assignees.length > 0) {
                 return res.status(403).json({
                     success: false,
                     message: 'You do not have access to this task.'
@@ -219,11 +285,15 @@ async function getTaskById(req, res) {
  * Create a new task
  * POST /api/projects/:projectId/tasks
  * Admin and Manager only
+ * 
+ * Request body can include:
+ * - assignedTo: single user ID (backward compatible)
+ * - assignees: array of user IDs (new multi-assignee support)
  */
 async function createTask(req, res) {
     try {
         const { projectId } = req.params;
-        const { title, description, assignedTo, dueDate, status } = req.body;
+        const { title, description, assignedTo, assignees, dueDate, status } = req.body;
         const { organization_id, id: userId } = req.user;
 
         // Validate required fields
@@ -256,39 +326,59 @@ async function createTask(req, res) {
             });
         }
 
-        // If assignedTo is provided, verify user exists and is a project member
-        if (assignedTo) {
+        // Determine assignee list - support both old single assignee and new multiple assignees
+        let assigneeIds = [];
+        if (assignees && Array.isArray(assignees)) {
+            assigneeIds = assignees.filter(id => id); // Remove empty values
+        } else if (assignedTo) {
+            assigneeIds = [assignedTo];
+        }
+
+        // Validate assignees are project members
+        if (assigneeIds.length > 0) {
             const memberCheck = await db.query(
-                'SELECT id FROM project_members WHERE project_id = $1 AND user_id = $2',
-                [projectId, assignedTo]
+                `SELECT user_id FROM project_members 
+                 WHERE project_id = $1 AND user_id = ANY($2::uuid[])`,
+                [projectId, assigneeIds]
             );
 
-            if (memberCheck.rows.length === 0) {
+            if (memberCheck.rows.length !== assigneeIds.length) {
                 return res.status(400).json({
                     success: false,
-                    message: 'The assigned user is not a member of this project.'
+                    message: 'One or more assigned users are not members of this project.'
                 });
             }
         }
 
         // Create the task
         const result = await db.query(
-            `INSERT INTO tasks (project_id, created_by, assigned_to, title, description, status, due_date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO tasks (project_id, created_by, title, description, status, due_date)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-            [projectId, userId, assignedTo || null, title.trim(), description?.trim() || null, taskStatus, dueDate || null]
+            [projectId, userId, title.trim(), description?.trim() || null, taskStatus, dueDate || null]
         );
 
         const task = result.rows[0];
 
-        // Create notification for assigned user (if different from creator)
-        if (assignedTo && assignedTo !== userId) {
-            const projectName = projectCheck.rows[0].name;
-            await db.query(
-                `INSERT INTO notifications (user_id, type, message, metadata)
-         VALUES ($1, 'task_assigned', $2, $3)`,
-                [assignedTo, `You have been assigned a new task: "${title}" in project "${projectName}".`, JSON.stringify({ taskId: task.id, projectId })]
-            );
+        // Add assignees to junction table
+        if (assigneeIds.length > 0) {
+            await setTaskAssignees(task.id, assigneeIds, projectId);
+        }
+
+        // Fetch the assignees to return
+        const taskAssignees = await getTaskAssignees(task.id);
+        task.assignees = taskAssignees;
+
+        // Create notifications for assigned users (if different from creator)
+        const projectName = projectCheck.rows[0].name;
+        for (const assigneeId of assigneeIds) {
+            if (assigneeId !== userId) {
+                await db.query(
+                    `INSERT INTO notifications (user_id, type, message, metadata)
+             VALUES ($1, 'task_assigned', $2, $3)`,
+                    [assigneeId, `You have been assigned a new task: "${title}" in project "${projectName}".`, JSON.stringify({ taskId: task.id, projectId })]
+                );
+            }
         }
 
         res.status(201).json({
@@ -310,11 +400,15 @@ async function createTask(req, res) {
  * Update a task
  * PUT /api/tasks/:id
  * Admin and Manager only
+ * 
+ * Supports both:
+ * - assignedTo: single user ID (backward compatible)
+ * - assignees: array of user IDs (new multi-assignee support)
  */
 async function updateTask(req, res) {
     try {
         const { id } = req.params;
-        const { title, description, assignedTo, dueDate, status } = req.body;
+        const { title, description, assignedTo, assignees, dueDate, status } = req.body;
         const { organization_id } = req.user;
 
         // Verify task exists and belongs to the organization
@@ -335,7 +429,7 @@ async function updateTask(req, res) {
 
         const existingTask = taskCheck.rows[0];
 
-        // Build update query
+        // Build update query for task fields
         const updates = [];
         const params = [];
         let paramIndex = 1;
@@ -348,25 +442,6 @@ async function updateTask(req, res) {
         if (description !== undefined) {
             params.push(description?.trim() || null);
             updates.push(`description = $${paramIndex++}`);
-        }
-
-        if (assignedTo !== undefined) {
-            // If assigning to someone, verify they're a project member
-            if (assignedTo) {
-                const memberCheck = await db.query(
-                    'SELECT id FROM project_members WHERE project_id = $1 AND user_id = $2',
-                    [existingTask.project_id, assignedTo]
-                );
-
-                if (memberCheck.rows.length === 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'The assigned user is not a member of this project.'
-                    });
-                }
-            }
-            params.push(assignedTo || null);
-            updates.push(`assigned_to = $${paramIndex++}`);
         }
 
         if (dueDate !== undefined) {
@@ -385,32 +460,62 @@ async function updateTask(req, res) {
             updates.push(`status = $${paramIndex++}`);
         }
 
-        if (updates.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'No fields to update.'
-            });
+        // Handle assignees update
+        let newAssigneeIds = null;
+        if (assignees !== undefined && Array.isArray(assignees)) {
+            newAssigneeIds = assignees.filter(id => id);
+        } else if (assignedTo !== undefined) {
+            // Backward compatibility: single assignee
+            newAssigneeIds = assignedTo ? [assignedTo] : [];
         }
 
-        updates.push('updated_at = CURRENT_TIMESTAMP');
-        params.push(id);
+        // Update assignees if provided
+        if (newAssigneeIds !== null) {
+            // Get current assignees for comparison
+            const currentAssignees = await getTaskAssignees(id);
+            const currentAssigneeIds = currentAssignees.map(a => a.id);
+            
+            try {
+                await setTaskAssignees(id, newAssigneeIds, existingTask.project_id);
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: error.message
+                });
+            }
 
-        const query = `UPDATE tasks SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
-        const result = await db.query(query, params);
-
-        // If assignee changed, notify the new assignee
-        if (assignedTo && assignedTo !== existingTask.assigned_to) {
-            await db.query(
-                `INSERT INTO notifications (user_id, type, message, metadata)
-         VALUES ($1, 'task_assigned', $2, $3)`,
-                [assignedTo, `You have been assigned a task: "${result.rows[0].title}" in project "${existingTask.project_name}".`, JSON.stringify({ taskId: id, projectId: existingTask.project_id })]
-            );
+            // Find newly added assignees for notifications
+            const newlyAdded = newAssigneeIds.filter(id => !currentAssigneeIds.includes(id));
+            
+            for (const assigneeId of newlyAdded) {
+                await db.query(
+                    `INSERT INTO notifications (user_id, type, message, metadata)
+             VALUES ($1, 'task_assigned', $2, $3)`,
+                    [assigneeId, `You have been assigned a task: "${existingTask.title}" in project "${existingTask.project_name}".`, JSON.stringify({ taskId: id, projectId: existingTask.project_id })]
+                );
+            }
         }
+
+        // Update task if there are field changes
+        let updatedTask;
+        if (updates.length > 0) {
+            updates.push('updated_at = CURRENT_TIMESTAMP');
+            params.push(id);
+
+            const query = `UPDATE tasks SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
+            const result = await db.query(query, params);
+            updatedTask = result.rows[0];
+        } else {
+            updatedTask = existingTask;
+        }
+
+        // Get updated assignees
+        updatedTask.assignees = await getTaskAssignees(id);
 
         res.json({
             success: true,
             message: 'Task updated successfully!',
-            data: result.rows[0]
+            data: updatedTask
         });
 
     } catch (error) {
@@ -425,7 +530,7 @@ async function updateTask(req, res) {
 /**
  * Update task status only
  * PATCH /api/tasks/:id/status
- * Can be done by the assigned user
+ * Can be done by any assigned user (via task_assignees table)
  */
 async function updateTaskStatus(req, res) {
     try {
@@ -459,12 +564,19 @@ async function updateTaskStatus(req, res) {
 
         const task = taskCheck.rows[0];
 
-        // For employees, verify they're the assigned user
-        if (role === 'employee' && task.assigned_to !== userId) {
-            return res.status(403).json({
-                success: false,
-                message: 'You can only update the status of tasks assigned to you.'
-            });
+        // For employees, verify they're assigned to this task
+        if (role === 'employee') {
+            const assigneeCheck = await db.query(
+                'SELECT id FROM task_assignees WHERE task_id = $1 AND user_id = $2',
+                [id, userId]
+            );
+            
+            if (assigneeCheck.rows.length === 0) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'You can only update the status of tasks assigned to you.'
+                });
+            }
         }
 
         const oldStatus = task.status;

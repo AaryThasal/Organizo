@@ -1,20 +1,13 @@
-// ===========================================
-// Authentication Controller
-// ===========================================
-// Handles user registration, login, and organization joining
+// Auth Controller - handles registration, login, and organization joining
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const { generateJoinCode, formatUserResponse, isValidEmail, isEmpty } = require('../utils/helpers');
 
-// Number of salt rounds for bcrypt password hashing
 const SALT_ROUNDS = 10;
 
-/**
- * Register a new admin along with their organization
- * POST /api/auth/register/admin
- */
+// POST /api/auth/register/admin
 async function registerAdmin(req, res) {
     try {
         const { organizationName, firstName, lastName, email, password } = req.body;
@@ -335,7 +328,7 @@ async function joinOrganization(req, res) {
             [organization.id, userId]
         );
 
-        // Create notification for admin about the join request
+        // Notify admin about join request
         const adminResult = await db.query(
             "SELECT id FROM users WHERE organization_id = $1 AND role = 'admin'",
             [organization.id]

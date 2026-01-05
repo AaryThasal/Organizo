@@ -1,12 +1,11 @@
-// ===========================================
-// My Tasks Page (Employee)
-// ===========================================
+// My Tasks Page - shows tasks assigned to current user
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchMyTasks, updateTaskStatus } from '../../store/taskSlice';
 import { showToast } from '../../store/uiSlice';
+import { useRefreshOnFocus } from '../../hooks/useRefreshOnFocus';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Spinner from '../../components/ui/Spinner';
@@ -17,9 +16,15 @@ function MyTasksPage() {
     const { myTasks, isLoading } = useSelector((state) => state.tasks);
     const [filter, setFilter] = useState('all');
 
-    useEffect(() => {
+    const refreshTasks = useCallback(() => {
         dispatch(fetchMyTasks());
     }, [dispatch]);
+
+    useEffect(() => {
+        refreshTasks();
+    }, [refreshTasks]);
+
+    useRefreshOnFocus(refreshTasks);
 
     const handleStatusChange = async (taskId, newStatus) => {
         const result = await dispatch(updateTaskStatus({ taskId, status: newStatus }));

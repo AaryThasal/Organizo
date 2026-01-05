@@ -1,13 +1,12 @@
-// ===========================================
-// Project Detail Page
-// ===========================================
+// Project Detail Page - shows project info, team, and tasks
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchProjectById, updateProject, addProjectMember, removeProjectMember } from '../../store/projectSlice';
 import { fetchProjectTasks, createTask, updateTaskStatus, deleteTask } from '../../store/taskSlice';
 import { showToast, openModal, closeModal } from '../../store/uiSlice';
+import { useRefreshOnFocus } from '../../hooks/useRefreshOnFocus';
 import Button from '../../components/ui/Button';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Avatar from '../../components/ui/Avatar';
@@ -33,7 +32,7 @@ function ProjectDetailPage() {
     const [taskForm, setTaskForm] = useState({
         title: '',
         description: '',
-        assignedTo: '',
+        assignees: [], // Changed from assignedTo to support multiple assignees
         dueDate: '',
         status: 'to-do',
     });
@@ -41,10 +40,16 @@ function ProjectDetailPage() {
 
     const canManage = user?.role === 'admin' || user?.role === 'manager';
 
-    useEffect(() => {
+    const refreshData = useCallback(() => {
         dispatch(fetchProjectById(id));
         dispatch(fetchProjectTasks({ projectId: id }));
     }, [dispatch, id]);
+
+    useEffect(() => {
+        refreshData();
+    }, [refreshData]);
+
+    useRefreshOnFocus(refreshData);
 
     useEffect(() => {
         if (canManage) {
@@ -99,7 +104,7 @@ function ProjectDetailPage() {
         if (!result.error) {
             dispatch(showToast({ type: 'success', message: 'Task created successfully!' }));
             dispatch(closeModal());
-            setTaskForm({ title: '', description: '', assignedTo: '', dueDate: '', status: 'to-do' });
+            setTaskForm({ title: '', description: '', assignees: [], dueDate: '', status: 'to-do' });
         } else {
             dispatch(showToast({ type: 'error', message: result.payload || 'Failed to create task' }));
         }
@@ -267,18 +272,30 @@ function ProjectDetailPage() {
                                             )}
 
                                             <div className="flex items-center justify-between">
-                                                {task.assigned_to ? (
-                                                    <Avatar
-                                                        firstName={task.assignee_first_name}
-                                                        lastName={task.assignee_last_name}
-                                                        size="sm"
-                                                    />
+                                                {/* Show multiple assignees */}
+                                                {task.assignees && task.assignees.length > 0 ? (
+                                                    <div className="flex -space-x-2">
+                                                        {task.assignees.slice(0, 3).map((assignee) => (
+                                                            <Avatar
+                                                                key={assignee.id}
+                                                                firstName={assignee.first_name}
+                                                                lastName={assignee.last_name}
+                                                                size="sm"
+                                                                className="ring-2 ring-white"
+                                                            />
+                                                        ))}
+                                                        {task.assignees.length > 3 && (
+                                                            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary-200 text-xs font-medium text-secondary-600 ring-2 ring-white">
+                                                                +{task.assignees.length - 3}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 ) : (
                                                     <span className="text-xs text-secondary-400">Unassigned</span>
                                                 )}
 
                                                 {/* Status dropdown */}
-                                                {(canManage || task.assigned_to === user?.id) && (
+                                                {(canManage || (task.assignees && task.assignees.some(a => a.id === user?.id))) && (
                                                     <select
                                                         value={task.status}
                                                         onChange={(e) => handleStatusChange(task.id, e.target.value)}
@@ -371,16 +388,57 @@ function ProjectDetailPage() {
                         />
                     </div>
 
-                    <Select
-                        label="Assign To"
-                        value={taskForm.assignedTo}
-                        onChange={(e) => setTaskForm({ ...taskForm, assignedTo: e.target.value })}
-                        options={projectMembers.map(m => ({
-                            value: m.id,
-                            label: `${m.first_name} ${m.last_name}`,
-                        }))}
-                        placeholder="Select assignee (optional)"
-                    />
+                    {/* Multi-select for assignees */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-secondary-700 mb-1.5">
+                            Assign To (select multiple)
+                        </label>
+                        <div className="border border-secondary-200 rounded-xl p-3 max-h-48 overflow-y-auto">
+                            {projectMembers.length === 0 ? (
+                                <p className="text-sm text-secondary-400 text-center py-2">
+                                    No team members available
+                                </p>
+                            ) : (
+                                projectMembers.map((member) => (
+                                    <label
+                                        key={member.id}
+                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary-50 cursor-pointer"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={taskForm.assignees.includes(member.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setTaskForm({
+                                                        ...taskForm,
+                                                        assignees: [...taskForm.assignees, member.id]
+                                                    });
+                                                } else {
+                                                    setTaskForm({
+                                                        ...taskForm,
+                                                        assignees: taskForm.assignees.filter(id => id !== member.id)
+                                                    });
+                                                }
+                                            }}
+                                            className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
+                                        />
+                                        <Avatar firstName={member.first_name} lastName={member.last_name} size="sm" />
+                                        <span className="text-sm text-secondary-700">
+                                            {member.first_name} {member.last_name}
+                                        </span>
+                                        <span className="text-xs text-secondary-400 ml-auto">
+                                            {member.role}
+                                        </span>
+                                    </label>
+                                ))
+                            )}
+                        </div>
+                        {taskForm.assignees.length > 0 && (
+                            <p className="text-xs text-secondary-500 mt-1">
+                                {taskForm.assignees.length} member(s) selected
+                            </p>
+                        )}
+                    </div>
 
                     <Input
                         label="Due Date"

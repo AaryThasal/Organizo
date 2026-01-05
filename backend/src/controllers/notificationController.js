@@ -1,18 +1,29 @@
-// ===========================================
-// Notification Controller
-// ===========================================
-// Handles notification retrieval and marking as read
+// Notification Controller - handles notifications CRUD
 
 const db = require('../config/db');
 
-/**
- * Get all notifications for the current user
- * GET /api/notifications
- */
+// Auto-cleanup: removes notifications older than 7 days
+async function cleanupOldNotifications(userId) {
+    try {
+        await db.query(
+            `DELETE FROM notifications 
+             WHERE user_id = $1 
+             AND (created_at < NOW() - INTERVAL '7 days')`,
+            [userId]
+        );
+    } catch (error) {
+        console.error('Notification cleanup error:', error);
+    }
+}
+
+// GET /api/notifications
 async function getNotifications(req, res) {
     try {
         const userId = req.user.id;
         const { unreadOnly } = req.query;
+
+        // Auto-cleanup old notifications
+        await cleanupOldNotifications(userId);
 
         let query = `
       SELECT * FROM notifications 

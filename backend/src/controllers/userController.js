@@ -1,7 +1,4 @@
-// ===========================================
-// User Controller
-// ===========================================
-// Handles user management: listing, approval, profile updates
+// User Controller - handles user management, approval, and profile updates
 
 const bcrypt = require('bcrypt');
 const db = require('../config/db');
@@ -9,11 +6,7 @@ const { formatUserResponse, isEmpty, isValidEmail } = require('../utils/helpers'
 
 const SALT_ROUNDS = 10;
 
-/**
- * Get all users in the organization
- * GET /api/users
- * Admin and Manager can access
- */
+// GET /api/users - Get all users in the organization
 async function getUsers(req, res) {
     try {
         const organizationId = req.user.organization_id;
@@ -126,7 +119,7 @@ async function approveUser(req, res) {
             [id]
         );
 
-        // Create notification for the user
+        // Notify user about approval
         await db.query(
             `INSERT INTO notifications (user_id, type, message) 
        VALUES ($1, 'approval', 'Your request to join the organization has been approved!')`,
@@ -185,7 +178,7 @@ async function rejectUser(req, res) {
             [id]
         );
 
-        // Create notification for the user
+        // Notify user about rejection
         await db.query(
             `INSERT INTO notifications (user_id, type, message) 
        VALUES ($1, 'rejection', 'Your request to join the organization has been declined.')`,

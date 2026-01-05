@@ -1,6 +1,4 @@
-// ===========================================
 // Main Application Component
-// ===========================================
 
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -8,18 +6,15 @@ import { Provider, useSelector, useDispatch } from 'react-redux';
 import store from './store/store';
 import { getCurrentUser } from './store/authSlice';
 
-// Components
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/layouts/DashboardLayout';
 import Toast from './components/ui/Toast';
 import { LoadingScreen } from './components/ui/Spinner';
 
-// Auth Pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import JoinOrganizationPage from './pages/auth/JoinOrganizationPage';
 
-// Dashboard Pages
 import DashboardPage from './pages/dashboard/DashboardPage';
 import ProjectsPage from './pages/projects/ProjectsPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
@@ -28,12 +23,10 @@ import PendingRequestsPage from './pages/admin/PendingRequestsPage';
 import MyTasksPage from './pages/tasks/MyTasksPage';
 import SettingsPage from './pages/settings/SettingsPage';
 
-// App wrapper that handles initial auth check
 function AppContent() {
   const dispatch = useDispatch();
   const { isAuthenticated, isLoading, user } = useSelector((state) => state.auth);
 
-  // Check authentication on app load
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token && !user) {
@@ -41,20 +34,27 @@ function AppContent() {
     }
   }, [dispatch, user]);
 
-  // Show loading screen while checking initial auth
   if (isLoading && localStorage.getItem('token')) {
     return <LoadingScreen message="Loading your account..." />;
   }
+
+  // Redirect authenticated users based on role and status
+  const getAuthenticatedRedirect = () => {
+    if (!user) return '/dashboard';
+    if (user.role === 'admin') return '/dashboard';
+    if (!user.organization_id || user.status === 'pending') return '/join-organization';
+    return '/dashboard';
+  };
 
   return (
     <>
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />
+          isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <LoginPage />
         } />
         <Route path="/register" element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterPage />
+          isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <RegisterPage />
         } />
         <Route path="/join-organization" element={
           <ProtectedRoute requireApproved={false}>
@@ -62,7 +62,7 @@ function AppContent() {
           </ProtectedRoute>
         } />
 
-        {/* Protected Dashboard Routes */}
+        {/* Dashboard Routes */}
         <Route element={
           <ProtectedRoute>
             <DashboardLayout />

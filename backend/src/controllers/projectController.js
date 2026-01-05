@@ -1,17 +1,9 @@
-// ===========================================
-// Project Controller
-// ===========================================
-// Handles project CRUD operations and member management
+// Project Controller - handles project CRUD and member management
 
 const db = require('../config/db');
 const { isEmpty } = require('../utils/helpers');
 
-/**
- * Get all projects (filtered by role)
- * GET /api/projects
- * - Admin/Manager: sees all organization projects
- * - Employee: sees only projects they're assigned to
- */
+// GET /api/projects
 async function getProjects(req, res) {
     try {
         const { organization_id, role, id: userId } = req.user;

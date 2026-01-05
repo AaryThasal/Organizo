@@ -1,15 +1,9 @@
-// ===========================================
-// Organization Controller
-// ===========================================
-// Handles organization CRUD operations
+// Organization Controller - handles organization CRUD
 
 const db = require('../config/db');
 const { generateJoinCode } = require('../utils/helpers');
 
-/**
- * Get organization details
- * GET /api/organization
- */
+// GET /api/organization
 async function getOrganization(req, res) {
     try {
         const organizationId = req.user.organization_id;
