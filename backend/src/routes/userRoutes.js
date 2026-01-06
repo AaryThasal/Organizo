@@ -1,20 +1,30 @@
-// ===========================================
 // User Routes
-// ===========================================
 
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { authenticateToken } = require('../middlewares/authMiddleware');
 const { requireRole, requireApproved, requireOrganization } = require('../middlewares/roleMiddleware');
+const { upload } = require('../config/cloudinary');
 
 // All routes require authentication
 router.use(authenticateToken);
 
 // PUT /api/users/profile
 // Update current user's profile
-// Any authenticated user can update their own profile
 router.put('/profile', userController.updateProfile);
+
+// POST /api/users/profile/image
+// Upload profile image to Cloudinary
+router.post(
+    '/profile/image',
+    upload.single('image'), // 'image' is the field name in form-data
+    userController.uploadProfileImage
+);
+
+// DELETE /api/users/profile/image
+// Remove profile image
+router.delete('/profile/image', userController.removeProfileImage);
 
 // GET /api/users/pending
 // Get pending join requests

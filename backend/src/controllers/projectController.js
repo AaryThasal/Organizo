@@ -330,23 +330,27 @@ async function deleteProject(req, res) {
  * Add a member to a project
  * POST /api/projects/:id/members
  * Admin and Manager only
+ * Accepts either: { userId: "..." } for single user OR { userIds: [...] } for bulk
  */
 async function addProjectMember(req, res) {
     try {
         const { id: projectId } = req.params;
-        const { userId } = req.body;
+        const { userId, userIds } = req.body;
         const { organization_id } = req.user;
 
-        if (!userId) {
+        // Support both single userId and bulk userIds array
+        const idsToAdd = userIds || (userId ? [userId] : []);
+
+        if (idsToAdd.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: 'User ID is required.'
+                message: 'User ID(s) required. Provide userId or userIds array.'
             });
         }
 
         // Verify project exists and belongs to the organization
         const projectCheck = await db.query(
-            'SELECT id FROM projects WHERE id = $1 AND organization_id = $2',
+            'SELECT id, name FROM projects WHERE id = $1 AND organization_id = $2',
             [projectId, organization_id]
         );
 
@@ -357,58 +361,51 @@ async function addProjectMember(req, res) {
             });
         }
 
-        // Verify user exists and belongs to the same organization
+        const projectName = projectCheck.rows[0].name;
+
+        // Verify all users exist and belong to the same organization
         const userCheck = await db.query(
-            "SELECT id, first_name, last_name FROM users WHERE id = $1 AND organization_id = $2 AND status = 'approved'",
-            [userId, organization_id]
+            `SELECT id, first_name, last_name FROM users 
+             WHERE id = ANY($1::uuid[]) AND organization_id = $2 AND status = 'approved'`,
+            [idsToAdd, organization_id]
         );
 
-        if (userCheck.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found or not approved.'
-            });
-        }
-
-        const user = userCheck.rows[0];
-
-        // Check if user is already a member
-        const memberCheck = await db.query(
-            'SELECT id FROM project_members WHERE project_id = $1 AND user_id = $2',
-            [projectId, userId]
-        );
-
-        if (memberCheck.rows.length > 0) {
+        if (userCheck.rows.length !== idsToAdd.length) {
             return res.status(400).json({
                 success: false,
-                message: 'User is already a member of this project.'
+                message: 'One or more users not found or not approved.'
             });
         }
 
-        // Add the member
+        // Insert members (ON CONFLICT DO NOTHING handles duplicates)
+        const insertValues = idsToAdd.map((_, i) => `($1, $${i + 2})`).join(', ');
         await db.query(
-            'INSERT INTO project_members (project_id, user_id) VALUES ($1, $2)',
-            [projectId, userId]
+            `INSERT INTO project_members (project_id, user_id) 
+             VALUES ${insertValues}
+             ON CONFLICT (project_id, user_id) DO NOTHING`,
+            [projectId, ...idsToAdd]
         );
 
-        // Create notification for the user
-        const projectName = (await db.query('SELECT name FROM projects WHERE id = $1', [projectId])).rows[0].name;
-        await db.query(
-            `INSERT INTO notifications (user_id, type, message, metadata)
-       VALUES ($1, 'project_added', $2, $3)`,
-            [userId, `You have been added to the project "${projectName}".`, JSON.stringify({ projectId })]
-        );
+        // Create notifications for added users
+        for (const addedUserId of idsToAdd) {
+            await db.query(
+                `INSERT INTO notifications (user_id, type, message, metadata)
+                 VALUES ($1, 'project_added', $2, $3)`,
+                [addedUserId, `You have been added to the project "${projectName}".`, JSON.stringify({ projectId })]
+            );
+        }
 
+        const addedCount = idsToAdd.length;
         res.json({
             success: true,
-            message: `${user.first_name} ${user.last_name} has been added to the project.`
+            message: `${addedCount} member(s) added to the project.`
         });
 
     } catch (error) {
         console.error('Add project member error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to add member to project.'
+            message: 'Failed to add member(s) to project.'
         });
     }
 }

@@ -1,7 +1,4 @@
-// ===========================================
-// Avatar Component
-// ===========================================
-// Displays user initials in a colored circle
+// Avatar Component - shows profile image or initials fallback
 
 import React from 'react';
 
@@ -35,21 +32,19 @@ const avatarColors = {
     Z: 'bg-pink-600',
 };
 
-// Get color based on name
 function getAvatarColor(name) {
     if (!name) return 'bg-secondary-500';
     const firstLetter = name.charAt(0).toUpperCase();
     return avatarColors[firstLetter] || 'bg-primary-500';
 }
 
-// Get initials from name
 function getInitials(firstName, lastName) {
     const first = firstName ? firstName.charAt(0).toUpperCase() : '';
     const last = lastName ? lastName.charAt(0).toUpperCase() : '';
     return first + last || '?';
 }
 
-// Size classes
+// Size classes for both image and initials
 const sizeClasses = {
     sm: 'w-8 h-8 text-xs',
     md: 'w-10 h-10 text-sm',
@@ -57,15 +52,30 @@ const sizeClasses = {
     xl: 'w-16 h-16 text-xl',
 };
 
-function Avatar({ firstName, lastName, size = 'md', className = '' }) {
+function Avatar({ firstName, lastName, profileImageUrl, size = 'md', className = '' }) {
+    const sizeClass = sizeClasses[size] || sizeClasses.md;
+    const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+
+    // If profile image URL exists, show image
+    if (profileImageUrl) {
+        return (
+            <img
+                src={profileImageUrl}
+                alt={fullName}
+                title={fullName}
+                className={`inline-block rounded-full object-cover ${sizeClass} ${className}`}
+            />
+        );
+    }
+
+    // Otherwise show initials
     const initials = getInitials(firstName, lastName);
     const colorClass = getAvatarColor(firstName);
-    const sizeClass = sizeClasses[size] || sizeClasses.md;
 
     return (
         <div
             className={`inline-flex items-center justify-center rounded-full font-semibold text-white uppercase ${colorClass} ${sizeClass} ${className}`}
-            title={`${firstName || ''} ${lastName || ''}`.trim()}
+            title={fullName}
         >
             {initials}
         </div>

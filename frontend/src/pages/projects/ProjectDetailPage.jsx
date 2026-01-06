@@ -28,11 +28,11 @@ function ProjectDetailPage() {
     const { activeModal, modalData } = useSelector((state) => state.ui);
 
     const [availableUsers, setAvailableUsers] = useState([]);
-    const [selectedUserId, setSelectedUserId] = useState('');
+    const [selectedUserIds, setSelectedUserIds] = useState([]); // Changed to array for bulk selection
     const [taskForm, setTaskForm] = useState({
         title: '',
         description: '',
-        assignees: [], // Changed from assignedTo to support multiple assignees
+        assignees: [],
         dueDate: '',
         status: 'to-do',
     });
@@ -68,19 +68,21 @@ function ProjectDetailPage() {
         }
     };
 
-    const handleAddMember = async () => {
-        if (!selectedUserId) return;
+    // Handle bulk member addition
+    const handleAddMembers = async () => {
+        if (selectedUserIds.length === 0) return;
 
         setLoading(true);
-        const result = await dispatch(addProjectMember({ projectId: id, userId: selectedUserId }));
+        const result = await dispatch(addProjectMember({ projectId: id, userIds: selectedUserIds }));
 
         if (!result.error) {
-            dispatch(showToast({ type: 'success', message: 'Member added successfully!' }));
+            const count = selectedUserIds.length;
+            dispatch(showToast({ type: 'success', message: `${count} member(s) added successfully!` }));
             dispatch(fetchProjectById(id));
-            setSelectedUserId('');
+            setSelectedUserIds([]);
             dispatch(closeModal());
         } else {
-            dispatch(showToast({ type: 'error', message: result.payload || 'Failed to add member' }));
+            dispatch(showToast({ type: 'error', message: result.payload || 'Failed to add members' }));
         }
         setLoading(false);
     };
@@ -327,36 +329,81 @@ function ProjectDetailPage() {
                 </div>
             </div>
 
-            {/* Add Member Modal */}
+            {/* Add Member Modal - Multi-select with checkboxes */}
             <Modal
                 isOpen={activeModal === 'addMember'}
-                onClose={() => dispatch(closeModal())}
-                title="Add Team Member"
+                onClose={() => {
+                    dispatch(closeModal());
+                    setSelectedUserIds([]);
+                }}
+                title="Add Team Members"
                 size="sm"
             >
-                <Select
-                    label="Select User"
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    options={availableUsers.map(u => ({
-                        value: u.id,
-                        label: `${u.first_name} ${u.last_name} (${u.role})`,
-                    }))}
-                    placeholder="Choose a team member"
-                />
+                <p className="text-sm text-secondary-600 mb-3">
+                    Select one or more employees to add to this project:
+                </p>
+                
+                <div className="border border-secondary-200 rounded-xl p-3 max-h-64 overflow-y-auto">
+                    {availableUsers.length === 0 ? (
+                        <p className="text-sm text-secondary-500 text-center py-4">
+                            All approved users are already members of this project.
+                        </p>
+                    ) : (
+                        availableUsers.map((u) => (
+                            <label
+                                key={u.id}
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary-50 cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={selectedUserIds.includes(u.id)}
+                                    onChange={(e) => {
+                                        if (e.target.checked) {
+                                            setSelectedUserIds([...selectedUserIds, u.id]);
+                                        } else {
+                                            setSelectedUserIds(selectedUserIds.filter(id => id !== u.id));
+                                        }
+                                    }}
+                                    className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
+                                />
+                                <Avatar firstName={u.first_name} lastName={u.last_name} size="sm" />
+                                <div className="flex-1">
+                                    <span className="text-sm text-secondary-700 font-medium">
+                                        {u.first_name} {u.last_name}
+                                    </span>
+                                    <span className="text-xs text-secondary-400 ml-2">
+                                        {u.role}
+                                    </span>
+                                </div>
+                            </label>
+                        ))
+                    )}
+                </div>
 
-                {availableUsers.length === 0 && (
-                    <p className="text-sm text-secondary-500 text-center mb-4">
-                        All approved users are already members of this project.
+                {selectedUserIds.length > 0 && (
+                    <p className="text-xs text-primary-600 mt-2">
+                        {selectedUserIds.length} user(s) selected
                     </p>
                 )}
 
                 <div className="flex gap-3 mt-6">
-                    <Button variant="secondary" onClick={() => dispatch(closeModal())} className="flex-1">
+                    <Button 
+                        variant="secondary" 
+                        onClick={() => {
+                            dispatch(closeModal());
+                            setSelectedUserIds([]);
+                        }} 
+                        className="flex-1"
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={handleAddMember} loading={loading} disabled={!selectedUserId} className="flex-1">
-                        Add Member
+                    <Button 
+                        onClick={handleAddMembers} 
+                        loading={loading} 
+                        disabled={selectedUserIds.length === 0} 
+                        className="flex-1"
+                    >
+                        Add {selectedUserIds.length > 0 ? `(${selectedUserIds.length})` : ''} Members
                     </Button>
                 </div>
             </Modal>

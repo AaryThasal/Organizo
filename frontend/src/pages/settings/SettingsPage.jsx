@@ -1,10 +1,8 @@
-// ===========================================
-// Settings Page
-// ===========================================
+// Settings Page - Profile, password, and organization settings
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateProfile } from '../../store/authSlice';
+import { updateProfile, getCurrentUser } from '../../store/authSlice';
 import { showToast } from '../../store/uiSlice';
 import api from '../../services/api';
 import Button from '../../components/ui/Button';
@@ -15,6 +13,7 @@ import Spinner from '../../components/ui/Spinner';
 function SettingsPage() {
     const dispatch = useDispatch();
     const { user, isLoading } = useSelector((state) => state.auth);
+    const fileInputRef = useRef(null);
 
     const [profileData, setProfileData] = useState({
         firstName: '',
@@ -34,6 +33,12 @@ function SettingsPage() {
     const [savingPassword, setSavingPassword] = useState(false);
     const [savingOrg, setSavingOrg] = useState(false);
     const [regenerating, setRegenerating] = useState(false);
+    
+    // Profile image states
+    const [imagePreview, setImagePreview] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [removingImage, setRemovingImage] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -61,6 +66,81 @@ function SettingsPage() {
             });
         } catch (error) {
             console.error('Failed to fetch org data:', error);
+        }
+    };
+
+    // Handle file selection for profile image
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            dispatch(showToast({ type: 'error', message: 'Please select an image file' }));
+            return;
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            dispatch(showToast({ type: 'error', message: 'Image must be less than 5MB' }));
+            return;
+        }
+
+        setSelectedFile(file);
+        // Create preview URL
+        setImagePreview(URL.createObjectURL(file));
+    };
+
+    // Upload image to server
+    const handleImageUpload = async () => {
+        if (!selectedFile) return;
+
+        setUploadingImage(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+
+            await api.post('/users/profile/image', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            dispatch(showToast({ type: 'success', message: 'Profile image updated!' }));
+            // Refresh user data to get new image URL
+            dispatch(getCurrentUser());
+            // Clear preview
+            setSelectedFile(null);
+            setImagePreview(null);
+        } catch (error) {
+            dispatch(showToast({ 
+                type: 'error', 
+                message: error.response?.data?.message || 'Failed to upload image' 
+            }));
+        }
+        setUploadingImage(false);
+    };
+
+    // Remove profile image
+    const handleRemoveImage = async () => {
+        if (!user?.profile_image_url) return;
+        if (!window.confirm('Remove your profile picture?')) return;
+
+        setRemovingImage(true);
+        try {
+            await api.delete('/users/profile/image');
+            dispatch(showToast({ type: 'success', message: 'Profile image removed!' }));
+            dispatch(getCurrentUser());
+        } catch (error) {
+            dispatch(showToast({ type: 'error', message: 'Failed to remove image' }));
+        }
+        setRemovingImage(false);
+    };
+
+    // Cancel image selection
+    const handleCancelImage = () => {
+        setSelectedFile(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
     };
 
@@ -158,14 +238,91 @@ function SettingsPage() {
             <div className="card mb-6">
                 <h2 className="text-lg font-semibold text-secondary-900 mb-6">Profile Information</h2>
 
-                <div className="flex items-center gap-4 mb-6">
-                    <Avatar firstName={user?.first_name} lastName={user?.last_name} size="xl" />
-                    <div>
+                {/* Profile Image Section */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 p-4 bg-secondary-50 rounded-xl">
+                    {/* Current/Preview Image */}
+                    <div className="relative">
+                        {imagePreview ? (
+                            // Show preview of selected image
+                            <img 
+                                src={imagePreview} 
+                                alt="Preview" 
+                                className="w-20 h-20 rounded-full object-cover border-2 border-primary-500"
+                            />
+                        ) : (
+                            // Show current profile image or avatar
+                            <Avatar 
+                                firstName={user?.first_name} 
+                                lastName={user?.last_name} 
+                                profileImageUrl={user?.profile_image_url}
+                                size="xl" 
+                            />
+                        )}
+                    </div>
+
+                    <div className="flex-1">
                         <p className="font-medium text-secondary-900">
                             {user?.first_name} {user?.last_name}
                         </p>
                         <p className="text-sm text-secondary-500">{user?.email}</p>
                         <p className="text-xs text-secondary-400 capitalize mt-1">{user?.role}</p>
+                        
+                        {/* Image Upload Controls */}
+                        <div className="flex flex-wrap gap-2 mt-3">
+                            {/* Hidden file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileSelect}
+                                className="hidden"
+                            />
+
+                            {selectedFile ? (
+                                // Show upload/cancel when file is selected
+                                <>
+                                    <Button 
+                                        size="sm" 
+                                        onClick={handleImageUpload}
+                                        loading={uploadingImage}
+                                    >
+                                        Upload Image
+                                    </Button>
+                                    <Button 
+                                        size="sm" 
+                                        variant="secondary" 
+                                        onClick={handleCancelImage}
+                                        disabled={uploadingImage}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </>
+                            ) : (
+                                // Show choose/remove buttons
+                                <>
+                                    <Button 
+                                        size="sm" 
+                                        variant="secondary"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        {user?.profile_image_url ? 'Change Photo' : 'Upload Photo'}
+                                    </Button>
+                                    {user?.profile_image_url && (
+                                        <Button 
+                                            size="sm" 
+                                            variant="danger"
+                                            onClick={handleRemoveImage}
+                                            loading={removingImage}
+                                        >
+                                            Remove
+                                        </Button>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                        <p className="text-xs text-secondary-400 mt-2">
+                            JPG, PNG or GIF. Max 5MB.
+                        </p>
                     </div>
                 </div>
 

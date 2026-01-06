@@ -1,8 +1,6 @@
-// ===========================================
-// Helper Utility Functions
-// ===========================================
-// Common helper functions used across the application
 
+// Helper Utility Functions
+// Common helper functions used across the application
 /**
  * Generate a random organization join code
  * Format: 6 uppercase alphanumeric characters (e.g., "A1B2C3")

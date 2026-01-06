@@ -93,15 +93,17 @@ export const fetchProjectMembers = createAsyncThunk(
     }
 );
 
-// Add project member
+// Add project member(s) - supports single userId or bulk userIds array
 export const addProjectMember = createAsyncThunk(
     'projects/addProjectMember',
-    async ({ projectId, userId }, { rejectWithValue }) => {
+    async ({ projectId, userId, userIds }, { rejectWithValue }) => {
         try {
-            const response = await api.post(`/projects/${projectId}/members`, { userId });
+            // Send userIds array if provided, otherwise single userId
+            const payload = userIds ? { userIds } : { userId };
+            const response = await api.post(`/projects/${projectId}/members`, payload);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to add member');
+            return rejectWithValue(error.response?.data?.message || 'Failed to add member(s)');
         }
     }
 );

@@ -31,7 +31,7 @@ async function authenticateToken(req, res, next) {
         // Get fresh user data from database
         // This ensures we have the latest user status and role
         const { rows } = await db.query(
-            'SELECT id, organization_id, first_name, last_name, email, role, status FROM users WHERE id = $1',
+            'SELECT id, organization_id, first_name, last_name, email, role, status, profile_image_url FROM users WHERE id = $1',
             [decoded.userId]
         );
 

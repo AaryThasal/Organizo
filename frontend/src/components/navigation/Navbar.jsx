@@ -157,6 +157,7 @@ function Navbar() {
                             <Avatar
                                 firstName={user?.first_name}
                                 lastName={user?.last_name}
+                                profileImageUrl={user?.profile_image_url}
                                 size="sm"
                             />
                             <span className="text-sm font-medium text-secondary-700 hidden sm:block">
