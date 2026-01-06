@@ -1,8 +1,4 @@
-// ===========================================
-// Organizo Backend - Main Application Entry
-// ===========================================
-// This is the main file that sets up and runs the Express server
-
+// set up and run the Express server
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -38,10 +34,6 @@ app.use(express.json());
 
 // Parse URL-encoded request bodies
 app.use(express.urlencoded({ extended: true }));
-
-// ===========================================
-// API Routes
-// ===========================================
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -80,9 +72,6 @@ app.use('/api/tasks', taskRoutes);
 // Notification routes
 app.use('/api/notifications', notificationRoutes);
 
-// ===========================================
-// Error Handling
-// ===========================================
 
 // 404 handler for unknown routes
 app.use((req, res) => {
@@ -102,9 +91,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// ===========================================
-// Start Server
-// ===========================================
 
 const PORT = process.env.PORT || 5000;
 

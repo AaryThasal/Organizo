@@ -16,7 +16,6 @@ async function cleanupOldNotifications(userId) {
     }
 }
 
-// GET /api/notifications
 async function getNotifications(req, res) {
     try {
         const userId = req.user.id;
@@ -40,7 +39,6 @@ async function getNotifications(req, res) {
 
         const result = await db.query(query, params);
 
-        // Also get unread count
         const unreadCount = await db.query(
             'SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND is_read = FALSE',
             [userId]
@@ -63,10 +61,7 @@ async function getNotifications(req, res) {
     }
 }
 
-/**
- * Mark a single notification as read
- * PATCH /api/notifications/:id/read
- */
+
 async function markAsRead(req, res) {
     try {
         const { id } = req.params;
@@ -85,7 +80,6 @@ async function markAsRead(req, res) {
             });
         }
 
-        // Mark as read
         await db.query(
             'UPDATE notifications SET is_read = TRUE WHERE id = $1',
             [id]
@@ -105,10 +99,6 @@ async function markAsRead(req, res) {
     }
 }
 
-/**
- * Mark all notifications as read
- * PATCH /api/notifications/read-all
- */
 async function markAllAsRead(req, res) {
     try {
         const userId = req.user.id;
@@ -132,10 +122,6 @@ async function markAllAsRead(req, res) {
     }
 }
 
-/**
- * Delete a notification
- * DELETE /api/notifications/:id
- */
 async function deleteNotification(req, res) {
     try {
         const { id } = req.params;

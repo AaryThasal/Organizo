@@ -7,7 +7,6 @@ const { generateJoinCode, formatUserResponse, isValidEmail, isEmpty } = require(
 
 const SALT_ROUNDS = 10;
 
-// POST /api/auth/register/admin
 async function registerAdmin(req, res) {
     try {
         const { organizationName, firstName, lastName, email, password } = req.body;
@@ -121,10 +120,7 @@ async function registerAdmin(req, res) {
     }
 }
 
-/**
- * Register a new manager or employee
- * POST /api/auth/register/user
- */
+
 async function registerUser(req, res) {
     try {
         const { firstName, lastName, email, password, role } = req.body;
@@ -173,7 +169,7 @@ async function registerUser(req, res) {
         // Hash the password
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-        // Create the user (without organization - they need to join one)
+        // Create the user 
         // Status is 'pending' until they join an organization and get approved
         const userResult = await db.query(
             `INSERT INTO users (first_name, last_name, email, password_hash, role, status) 
@@ -208,10 +204,6 @@ async function registerUser(req, res) {
     }
 }
 
-/**
- * User login
- * POST /api/auth/login
- */
 async function login(req, res) {
     try {
         const { email, password } = req.body;
@@ -281,11 +273,6 @@ async function login(req, res) {
     }
 }
 
-/**
- * Join an organization using join code
- * POST /api/auth/join-organization
- * Requires: authenticated user without an organization
- */
 async function joinOrganization(req, res) {
     try {
         const { joinCode } = req.body;
@@ -365,10 +352,6 @@ async function joinOrganization(req, res) {
     }
 }
 
-/**
- * Get current user profile
- * GET /api/auth/me
- */
 async function getCurrentUser(req, res) {
     try {
         // Get organization info if user belongs to one

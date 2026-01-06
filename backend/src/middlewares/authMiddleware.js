@@ -1,15 +1,9 @@
-// ===========================================
-// Authentication Middleware
-// ===========================================
 // Verifies JWT tokens and attaches user data to requests
 
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
-/**
- * Middleware to verify JWT token
- * Adds user data to req.user if token is valid
- */
+// Middleware to verify JWT token
 async function authenticateToken(req, res, next) {
     try {
         // Get the Authorization header
@@ -29,7 +23,6 @@ async function authenticateToken(req, res, next) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Get fresh user data from database
-        // This ensures we have the latest user status and role
         const { rows } = await db.query(
             'SELECT id, organization_id, first_name, last_name, email, role, status, profile_image_url FROM users WHERE id = $1',
             [decoded.userId]

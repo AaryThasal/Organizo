@@ -4,5 +4,4 @@
 ALTER TABLE users 
 ADD COLUMN IF NOT EXISTS profile_image_url TEXT;
 
--- Show results
 SELECT 'Migration completed! profile_image_url column added.' as status;

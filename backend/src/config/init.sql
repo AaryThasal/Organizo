@@ -1,10 +1,6 @@
 -- Organizo Database Schema
--- Enable UUID extension for generating unique IDs
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- ===========================================
--- Organizations Table
--- ===========================================
 -- Stores organization/company information
 CREATE TABLE IF NOT EXISTS organizations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -14,9 +10,6 @@ CREATE TABLE IF NOT EXISTS organizations (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ===========================================
--- Users Table
--- ===========================================
 -- Stores all users (admins, managers, employees)
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -32,9 +25,6 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ===========================================
--- Projects Table
--- ===========================================
 -- Stores project information
 CREATE TABLE IF NOT EXISTS projects (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -48,9 +38,6 @@ CREATE TABLE IF NOT EXISTS projects (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ===========================================
--- Project Members Table
--- ===========================================
 -- Junction table: links users to projects they're assigned to
 CREATE TABLE IF NOT EXISTS project_members (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -61,12 +48,7 @@ CREATE TABLE IF NOT EXISTS project_members (
     UNIQUE(project_id, user_id)
 );
 
--- ===========================================
--- Tasks Table
--- ===========================================
 -- Stores tasks within projects
--- NOTE: assigned_to is kept for backward compatibility but deprecated
--- Use task_assignees table for multiple assignees
 CREATE TABLE IF NOT EXISTS tasks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -80,9 +62,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ===========================================
--- Task Assignees Table (NEW)
--- ===========================================
+
 -- Junction table: allows multiple employees to be assigned to a single task
 CREATE TABLE IF NOT EXISTS task_assignees (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -93,9 +73,6 @@ CREATE TABLE IF NOT EXISTS task_assignees (
     UNIQUE(task_id, user_id)
 );
 
--- ===========================================
--- Notifications Table
--- ===========================================
 -- Stores user notifications
 CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -107,9 +84,8 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ===========================================
+
 -- Indexes for better query performance
--- ===========================================
 CREATE INDEX IF NOT EXISTS idx_users_organization ON users(organization_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_projects_organization ON projects(organization_id);

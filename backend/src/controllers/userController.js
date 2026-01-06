@@ -7,7 +7,6 @@ const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
 
 const SALT_ROUNDS = 10;
 
-// GET /api/users - Get all users in the organization
 async function getUsers(req, res) {
     try {
         const organizationId = req.user.organization_id;
@@ -15,9 +14,9 @@ async function getUsers(req, res) {
 
         // Build query based on filters
         let query = `
-      SELECT id, organization_id, first_name, last_name, email, role, status, created_at 
-      FROM users 
-      WHERE organization_id = $1
+            SELECT id, organization_id, first_name, last_name, email, role, status, created_at 
+            FROM users 
+            WHERE organization_id = $1
     `;
         const params = [organizationId];
 
@@ -51,11 +50,7 @@ async function getUsers(req, res) {
     }
 }
 
-/**
- * Get pending join requests
- * GET /api/users/pending
- * Admin only
- */
+
 async function getPendingRequests(req, res) {
     try {
         const organizationId = req.user.organization_id;
@@ -82,11 +77,6 @@ async function getPendingRequests(req, res) {
     }
 }
 
-/**
- * Approve a user's join request
- * POST /api/users/:id/approve
- * Admin only
- */
 async function approveUser(req, res) {
     try {
         const { id } = req.params;
@@ -141,11 +131,6 @@ async function approveUser(req, res) {
     }
 }
 
-/**
- * Reject a user's join request
- * POST /api/users/:id/reject
- * Admin only
- */
 async function rejectUser(req, res) {
     try {
         const { id } = req.params;
@@ -200,10 +185,6 @@ async function rejectUser(req, res) {
     }
 }
 
-/**
- * Update current user's profile
- * PUT /api/users/profile
- */
 async function updateProfile(req, res) {
     try {
         const userId = req.user.id;
@@ -322,11 +303,6 @@ async function updateProfile(req, res) {
     }
 }
 
-/**
- * Remove a user from the organization
- * DELETE /api/users/:id
- * Admin only
- */
 async function removeUser(req, res) {
     try {
         const { id } = req.params;
@@ -387,10 +363,6 @@ async function removeUser(req, res) {
     }
 }
 
-/**
- * Get a single user by ID
- * GET /api/users/:id
- */
 async function getUserById(req, res) {
     try {
         const { id } = req.params;
@@ -424,7 +396,6 @@ async function getUserById(req, res) {
     }
 }
 
-// POST /api/users/profile/image - Upload profile image
 async function uploadProfileImage(req, res) {
     try {
         const userId = req.user.id;
@@ -449,7 +420,6 @@ async function uploadProfileImage(req, res) {
             await deleteImage(oldPublicId);
         }
 
-        // The image URL is provided by Cloudinary storage in req.file.path
         const imageUrl = req.file.path;
 
         // Update user's profile_image_url in database
@@ -476,7 +446,6 @@ async function uploadProfileImage(req, res) {
     }
 }
 
-// DELETE /api/users/profile/image - Remove profile image
 async function removeProfileImage(req, res) {
     try {
         const userId = req.user.id;

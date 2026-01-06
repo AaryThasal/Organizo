@@ -1,14 +1,5 @@
-// ===========================================
-// Role-Based Authorization Middleware
-// ===========================================
 // Controls access based on user roles and approval status
 
-/**
- * Middleware factory to check if user has required role(s)
- * Usage: requireRole(['admin', 'manager'])
- * 
- * @param {string[]} allowedRoles - Array of roles that can access the route
- */
 function requireRole(allowedRoles) {
     return (req, res, next) => {
         // Make sure user is authenticated first
@@ -31,10 +22,6 @@ function requireRole(allowedRoles) {
     };
 }
 
-/**
- * Middleware to ensure user is approved
- * Pending or rejected users cannot access protected resources
- */
 function requireApproved(req, res, next) {
     // Make sure user is authenticated first
     if (!req.user) {
@@ -60,9 +47,6 @@ function requireApproved(req, res, next) {
     next();
 }
 
-/**
- * Middleware to ensure user belongs to an organization
- */
 function requireOrganization(req, res, next) {
     if (!req.user) {
         return res.status(401).json({

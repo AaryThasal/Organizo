@@ -20,6 +20,5 @@ FROM tasks
 WHERE assigned_to IS NOT NULL
 ON CONFLICT (task_id, user_id) DO NOTHING;
 
--- Show migration results
 SELECT 'Migration completed!' as status;
 SELECT COUNT(*) as tasks_migrated FROM task_assignees;

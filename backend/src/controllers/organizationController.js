@@ -3,7 +3,6 @@
 const db = require('../config/db');
 const { generateJoinCode } = require('../utils/helpers');
 
-// GET /api/organization
 async function getOrganization(req, res) {
     try {
         const organizationId = req.user.organization_id;
@@ -57,11 +56,6 @@ async function getOrganization(req, res) {
     }
 }
 
-/**
- * Update organization name
- * PUT /api/organization
- * Admin only
- */
 async function updateOrganization(req, res) {
     try {
         const { name } = req.body;
@@ -101,11 +95,6 @@ async function updateOrganization(req, res) {
     }
 }
 
-/**
- * Get organization join code
- * GET /api/organization/join-code
- * Admin only
- */
 async function getJoinCode(req, res) {
     try {
         const organizationId = req.user.organization_id;
@@ -138,11 +127,6 @@ async function getJoinCode(req, res) {
     }
 }
 
-/**
- * Regenerate organization join code
- * POST /api/organization/regenerate-code
- * Admin only
- */
 async function regenerateJoinCode(req, res) {
     try {
         const organizationId = req.user.organization_id;

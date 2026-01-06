@@ -4,8 +4,6 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-// Configure Cloudinary with your credentials
-// These values come from your Cloudinary dashboard
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -56,7 +54,7 @@ const deleteImage = async (publicId) => {
 // Extract public_id from Cloudinary URL for deletion
 const getPublicIdFromUrl = (url) => {
     if (!url) return null;
-    // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{folder}/{public_id}.{format}
+    
     const matches = url.match(/\/organizo-profiles\/([^.]+)/);
     return matches ? `organizo-profiles/${matches[1]}` : null;
 };

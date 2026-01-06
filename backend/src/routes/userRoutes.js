@@ -7,28 +7,22 @@ const { authenticateToken } = require('../middlewares/authMiddleware');
 const { requireRole, requireApproved, requireOrganization } = require('../middlewares/roleMiddleware');
 const { upload } = require('../config/cloudinary');
 
-// All routes require authentication
 router.use(authenticateToken);
 
-// PUT /api/users/profile
 // Update current user's profile
 router.put('/profile', userController.updateProfile);
 
-// POST /api/users/profile/image
 // Upload profile image to Cloudinary
 router.post(
     '/profile/image',
-    upload.single('image'), // 'image' is the field name in form-data
+    upload.single('image'), 
     userController.uploadProfileImage
 );
 
-// DELETE /api/users/profile/image
 // Remove profile image
 router.delete('/profile/image', userController.removeProfileImage);
 
-// GET /api/users/pending
 // Get pending join requests
-// Admin only
 router.get(
     '/pending',
     requireOrganization,
@@ -36,9 +30,7 @@ router.get(
     userController.getPendingRequests
 );
 
-// GET /api/users
 // Get all users in the organization
-// Admin and Manager can access
 router.get(
     '/',
     requireOrganization,
@@ -47,9 +39,7 @@ router.get(
     userController.getUsers
 );
 
-// GET /api/users/:id
 // Get a single user by ID
-// Admin and Manager can access
 router.get(
     '/:id',
     requireOrganization,
@@ -58,9 +48,7 @@ router.get(
     userController.getUserById
 );
 
-// POST /api/users/:id/approve
 // Approve a user's join request
-// Admin only
 router.post(
     '/:id/approve',
     requireOrganization,
@@ -68,9 +56,7 @@ router.post(
     userController.approveUser
 );
 
-// POST /api/users/:id/reject
 // Reject a user's join request
-// Admin only
 router.post(
     '/:id/reject',
     requireOrganization,
@@ -78,9 +64,7 @@ router.post(
     userController.rejectUser
 );
 
-// DELETE /api/users/:id
 // Remove a user from the organization
-// Admin only
 router.delete(
     '/:id',
     requireOrganization,

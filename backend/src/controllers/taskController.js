@@ -47,10 +47,6 @@ async function setTaskAssignees(taskId, assigneeIds, projectId) {
     }
 }
 
-/**
- * Get all tasks for a project
- * GET /api/projects/:projectId/tasks
- */
 async function getProjectTasks(req, res) {
     try {
         const { projectId } = req.params;
@@ -148,11 +144,6 @@ async function getProjectTasks(req, res) {
     }
 }
 
-/**
- * Get tasks assigned to the current user
- * GET /api/tasks/my-tasks
- * Uses task_assignees junction table to find user's tasks
- */
 async function getMyTasks(req, res) {
     try {
         const { id: userId, organization_id } = req.user;
@@ -209,10 +200,6 @@ async function getMyTasks(req, res) {
     }
 }
 
-/**
- * Get a single task by ID
- * GET /api/tasks/:id
- */
 async function getTaskById(req, res) {
     try {
         const { id } = req.params;
@@ -281,15 +268,7 @@ async function getTaskById(req, res) {
     }
 }
 
-/**
- * Create a new task
- * POST /api/projects/:projectId/tasks
- * Admin and Manager only
- * 
- * Request body can include:
- * - assignedTo: single user ID (backward compatible)
- * - assignees: array of user IDs (new multi-assignee support)
- */
+
 async function createTask(req, res) {
     try {
         const { projectId } = req.params;
@@ -326,10 +305,10 @@ async function createTask(req, res) {
             });
         }
 
-        // Determine assignee list - support both old single assignee and new multiple assignees
+        // Determine assignee list 
         let assigneeIds = [];
         if (assignees && Array.isArray(assignees)) {
-            assigneeIds = assignees.filter(id => id); // Remove empty values
+            assigneeIds = assignees.filter(id => id); 
         } else if (assignedTo) {
             assigneeIds = [assignedTo];
         }
@@ -396,15 +375,6 @@ async function createTask(req, res) {
     }
 }
 
-/**
- * Update a task
- * PUT /api/tasks/:id
- * Admin and Manager only
- * 
- * Supports both:
- * - assignedTo: single user ID (backward compatible)
- * - assignees: array of user IDs (new multi-assignee support)
- */
 async function updateTask(req, res) {
     try {
         const { id } = req.params;
@@ -527,11 +497,6 @@ async function updateTask(req, res) {
     }
 }
 
-/**
- * Update task status only
- * PATCH /api/tasks/:id/status
- * Can be done by any assigned user (via task_assignees table)
- */
 async function updateTaskStatus(req, res) {
     try {
         const { id } = req.params;
@@ -589,7 +554,7 @@ async function updateTaskStatus(req, res) {
 
         // If an employee updates a task, notify the project creator/managers
         if (role === 'employee' && oldStatus !== status) {
-            // Get managers and admin of the organization
+            
             const managersResult = await db.query(
                 "SELECT id FROM users WHERE organization_id = $1 AND role IN ('admin', 'manager') AND status = 'approved'",
                 [organization_id]
@@ -622,11 +587,6 @@ async function updateTaskStatus(req, res) {
     }
 }
 
-/**
- * Delete a task
- * DELETE /api/tasks/:id
- * Admin and Manager only
- */
 async function deleteTask(req, res) {
     try {
         const { id } = req.params;

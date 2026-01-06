@@ -1,10 +1,6 @@
+//Generate a random organization join code
+// Format: 6 uppercase alphanumeric characters (e.g., "A1B2C3")
 
-// Helper Utility Functions
-// Common helper functions used across the application
-/**
- * Generate a random organization join code
- * Format: 6 uppercase alphanumeric characters (e.g., "A1B2C3")
- */
 function generateJoinCode() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
@@ -17,10 +13,6 @@ function generateJoinCode() {
     return code;
 }
 
-/**
- * Format a user object for API response
- * Removes sensitive data like password_hash
- */
 function formatUserResponse(user) {
     if (!user) return null;
 
@@ -28,10 +20,6 @@ function formatUserResponse(user) {
     return safeUser;
 }
 
-/**
- * Get initials from first and last name
- * Used for avatar display
- */
 function getInitials(firstName, lastName) {
     const first = firstName ? firstName.charAt(0).toUpperCase() : '';
     const last = lastName ? lastName.charAt(0).toUpperCase() : '';
@@ -46,9 +34,6 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-/**
- * Check if a string is empty or only whitespace
- */
 function isEmpty(str) {
     return !str || str.trim().length === 0;
 }

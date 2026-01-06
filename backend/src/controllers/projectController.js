@@ -3,7 +3,6 @@
 const db = require('../config/db');
 const { isEmpty } = require('../utils/helpers');
 
-// GET /api/projects
 async function getProjects(req, res) {
     try {
         const { organization_id, role, id: userId } = req.user;
@@ -64,10 +63,6 @@ async function getProjects(req, res) {
     }
 }
 
-/**
- * Get a single project by ID
- * GET /api/projects/:id
- */
 async function getProjectById(req, res) {
     try {
         const { id } = req.params;
@@ -145,11 +140,6 @@ async function getProjectById(req, res) {
     }
 }
 
-/**
- * Create a new project
- * POST /api/projects
- * Admin and Manager only
- */
 async function createProject(req, res) {
     try {
         const { name, description, dueDate, status } = req.body;
@@ -203,11 +193,6 @@ async function createProject(req, res) {
     }
 }
 
-/**
- * Update a project
- * PUT /api/projects/:id
- * Admin and Manager only
- */
 async function updateProject(req, res) {
     try {
         const { id } = req.params;
@@ -286,11 +271,6 @@ async function updateProject(req, res) {
     }
 }
 
-/**
- * Delete a project (and all its tasks)
- * DELETE /api/projects/:id
- * Admin and Manager only
- */
 async function deleteProject(req, res) {
     try {
         const { id } = req.params;
@@ -326,12 +306,7 @@ async function deleteProject(req, res) {
     }
 }
 
-/**
- * Add a member to a project
- * POST /api/projects/:id/members
- * Admin and Manager only
- * Accepts either: { userId: "..." } for single user OR { userIds: [...] } for bulk
- */
+
 async function addProjectMember(req, res) {
     try {
         const { id: projectId } = req.params;
@@ -410,12 +385,6 @@ async function addProjectMember(req, res) {
     }
 }
 
-/**
- * Remove a member from a project
- * DELETE /api/projects/:id/members/:userId
- * Admin and Manager only
- * Note: This does NOT delete the user's tasks - they become unassigned
- */
 async function removeProjectMember(req, res) {
     try {
         const { id: projectId, userId } = req.params;
@@ -478,10 +447,6 @@ async function removeProjectMember(req, res) {
     }
 }
 
-/**
- * Get project members
- * GET /api/projects/:id/members
- */
 async function getProjectMembers(req, res) {
     try {
         const { id: projectId } = req.params;

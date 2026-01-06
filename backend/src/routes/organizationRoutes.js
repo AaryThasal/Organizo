@@ -1,6 +1,4 @@
-// ===========================================
 // Organization Routes
-// ===========================================
 
 const express = require('express');
 const router = express.Router();
@@ -11,7 +9,6 @@ const { requireRole, requireApproved, requireOrganization } = require('../middle
 // All routes require authentication
 router.use(authenticateToken);
 
-// GET /api/organization
 // Get organization details
 // Any approved user can view
 router.get(
@@ -21,9 +18,7 @@ router.get(
     organizationController.getOrganization
 );
 
-// PUT /api/organization
 // Update organization name
-// Admin only
 router.put(
     '/',
     requireOrganization,
@@ -31,9 +26,7 @@ router.put(
     organizationController.updateOrganization
 );
 
-// GET /api/organization/join-code
 // Get the organization join code
-// Admin only
 router.get(
     '/join-code',
     requireOrganization,
@@ -41,9 +34,7 @@ router.get(
     organizationController.getJoinCode
 );
 
-// POST /api/organization/regenerate-code
 // Regenerate the organization join code
-// Admin only
 router.post(
     '/regenerate-code',
     requireOrganization,
