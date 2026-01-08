@@ -240,91 +240,134 @@ function ProjectDetailPage() {
                     </div>
                 </div>
 
-                {/* Tasks Board */}
+                {/* Tasks Section - Clean list layout grouped by status */}
                 <div className="lg:col-span-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                        {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
-                            <div key={status} className="bg-secondary-100 rounded-xl p-4">
-                                <div className="flex items-center justify-between mb-4">
+                    <div className="card">
+                        <h2 className="text-lg font-semibold text-secondary-900 mb-6">Tasks</h2>
+
+                        {/* Task count summary - quick overview */}
+                        <div className="flex flex-wrap gap-3 mb-6 pb-4 border-b border-secondary-100">
+                            {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
+                                <div key={status} className="flex items-center gap-2">
                                     <StatusBadge status={status} type="task" />
-                                    <span className="text-xs font-medium text-secondary-500 bg-white px-2 py-1 rounded-lg">
+                                    <span className="text-sm font-medium text-secondary-600">
                                         {statusTasks.length}
                                     </span>
                                 </div>
+                            ))}
+                        </div>
 
-                                <div className="space-y-3">
-                                    {statusTasks.map((task) => (
-                                        <div key={task.id} className="card p-4 group">
-                                            <div className="flex items-start justify-between mb-2">
-                                                <h4 className="text-sm font-medium text-secondary-900">{task.title}</h4>
-                                                {canManage && (
-                                                    <button
-                                                        onClick={() => handleDeleteTask(task.id, task.title)}
-                                                        className="p-1 rounded text-secondary-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition-all"
-                                                    >
-                                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                )}
-                                            </div>
+                        {/* Task list - grouped by status */}
+                        <div className="space-y-6">
+                            {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
+                                statusTasks.length > 0 && (
+                                    <div key={status}>
+                                        {/* Status section header */}
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <StatusBadge status={status} type="task" />
+                                            <span className="text-xs text-secondary-400">
+                                                ({statusTasks.length} {statusTasks.length === 1 ? 'task' : 'tasks'})
+                                            </span>
+                                        </div>
 
-                                            {task.description && (
-                                                <p className="text-xs text-secondary-500 line-clamp-2 mb-3">{task.description}</p>
-                                            )}
-
-                                            <div className="flex items-center justify-between">
-                                                {/* Show multiple assignees */}
-                                                {task.assignees && task.assignees.length > 0 ? (
-                                                    <div className="flex -space-x-2">
-                                                        {task.assignees.slice(0, 3).map((assignee) => (
-                                                            <Avatar
-                                                                key={assignee.id}
-                                                                firstName={assignee.first_name}
-                                                                lastName={assignee.last_name}
-                                                                size="sm"
-                                                                className="ring-2 ring-white"
-                                                            />
-                                                        ))}
-                                                        {task.assignees.length > 3 && (
-                                                            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary-200 text-xs font-medium text-secondary-600 ring-2 ring-white">
-                                                                +{task.assignees.length - 3}
-                                                            </span>
+                                        {/* Tasks in this status */}
+                                        <div className="space-y-2">
+                                            {statusTasks.map((task) => (
+                                                <div
+                                                    key={task.id}
+                                                    className="flex items-center gap-4 p-4 bg-secondary-50 rounded-xl hover:bg-secondary-100 transition-colors group"
+                                                >
+                                                    {/* Task title and description */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-sm font-medium text-secondary-900 truncate">
+                                                            {task.title}
+                                                        </h4>
+                                                        {task.description && (
+                                                            <p className="text-xs text-secondary-500 truncate mt-0.5">
+                                                                {task.description}
+                                                            </p>
                                                         )}
                                                     </div>
-                                                ) : (
-                                                    <span className="text-xs text-secondary-400">Unassigned</span>
-                                                )}
 
-                                                {/* Status dropdown */}
-                                                {(canManage || (task.assignees && task.assignees.some(a => a.id === user?.id))) && (
-                                                    <select
-                                                        value={task.status}
-                                                        onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                                                        className="text-xs border-0 bg-secondary-100 rounded-lg py-1 pr-6 focus:ring-0 cursor-pointer"
-                                                    >
-                                                        <option value="to-do">To Do</option>
-                                                        <option value="in-progress">In Progress</option>
-                                                        <option value="completed">Completed</option>
-                                                        <option value="on-hold">On Hold</option>
-                                                    </select>
-                                                )}
-                                            </div>
+                                                    {/* Due date */}
+                                                    {task.due_date && (
+                                                        <div className="hidden sm:flex items-center gap-1.5 text-xs text-secondary-500 shrink-0">
+                                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                            {new Date(task.due_date).toLocaleDateString()}
+                                                        </div>
+                                                    )}
 
-                                            {task.due_date && (
-                                                <p className="text-xs text-secondary-400 mt-2">
-                                                    Due: {new Date(task.due_date).toLocaleDateString()}
-                                                </p>
-                                            )}
+                                                    {/* Assignees */}
+                                                    <div className="shrink-0">
+                                                        {task.assignees && task.assignees.length > 0 ? (
+                                                            <div className="flex -space-x-2">
+                                                                {task.assignees.slice(0, 3).map((assignee) => (
+                                                                    <Avatar
+                                                                        key={assignee.id}
+                                                                        firstName={assignee.first_name}
+                                                                        lastName={assignee.last_name}
+                                                                        size="sm"
+                                                                        className="ring-2 ring-white"
+                                                                    />
+                                                                ))}
+                                                                {task.assignees.length > 3 && (
+                                                                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary-200 text-xs font-medium text-secondary-600 ring-2 ring-white">
+                                                                        +{task.assignees.length - 3}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-xs text-secondary-400">Unassigned</span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Status dropdown - compact */}
+                                                    {(canManage || (task.assignees && task.assignees.some(a => a.id === user?.id))) && (
+                                                        <select
+                                                            value={task.status}
+                                                            onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                                                            className="text-xs border border-secondary-200 bg-white rounded-lg py-1.5 px-2 pr-6 focus:ring-1 focus:ring-primary-500 cursor-pointer shrink-0"
+                                                        >
+                                                            <option value="to-do">To Do</option>
+                                                            <option value="in-progress">In Progress</option>
+                                                            <option value="completed">Completed</option>
+                                                            <option value="on-hold">On Hold</option>
+                                                        </select>
+                                                    )}
+
+                                                    {/* Delete button - managers only */}
+                                                    {canManage && (
+                                                        <button
+                                                            onClick={() => handleDeleteTask(task.id, task.title)}
+                                                            className="p-2 rounded-lg text-secondary-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition-all shrink-0"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    </div>
+                                )
+                            ))}
 
-                                    {statusTasks.length === 0 && (
-                                        <p className="text-xs text-secondary-400 text-center py-4">No tasks</p>
+                            {/* Empty state when no tasks exist */}
+                            {tasks.length === 0 && (
+                                <div className="text-center py-8">
+                                    <svg className="w-12 h-12 mx-auto text-secondary-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    <p className="text-sm text-secondary-500">No tasks yet</p>
+                                    {canManage && (
+                                        <p className="text-xs text-secondary-400 mt-1">Click "Add Task" to create your first task</p>
                                     )}
                                 </div>
-                            </div>
-                        ))}
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -342,7 +385,7 @@ function ProjectDetailPage() {
                 <p className="text-sm text-secondary-600 mb-3">
                     Select one or more employees to add to this project:
                 </p>
-                
+
                 <div className="border border-secondary-200 rounded-xl p-3 max-h-64 overflow-y-auto">
                     {availableUsers.length === 0 ? (
                         <p className="text-sm text-secondary-500 text-center py-4">
@@ -387,20 +430,20 @@ function ProjectDetailPage() {
                 )}
 
                 <div className="flex gap-3 mt-6">
-                    <Button 
-                        variant="secondary" 
+                    <Button
+                        variant="secondary"
                         onClick={() => {
                             dispatch(closeModal());
                             setSelectedUserIds([]);
-                        }} 
+                        }}
                         className="flex-1"
                     >
                         Cancel
                     </Button>
-                    <Button 
-                        onClick={handleAddMembers} 
-                        loading={loading} 
-                        disabled={selectedUserIds.length === 0} 
+                    <Button
+                        onClick={handleAddMembers}
+                        loading={loading}
+                        disabled={selectedUserIds.length === 0}
                         className="flex-1"
                     >
                         Add {selectedUserIds.length > 0 ? `(${selectedUserIds.length})` : ''} Members

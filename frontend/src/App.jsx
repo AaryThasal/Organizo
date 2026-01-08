@@ -85,9 +85,13 @@ function AppContent() {
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
-        {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Default redirect - check auth before redirecting */}
+        <Route path="/" element={
+          isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <Navigate to="/login" replace />
+        } />
+        <Route path="*" element={
+          isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <Navigate to="/login" replace />
+        } />
       </Routes>
 
       {/* Global Toast */}

@@ -81,6 +81,19 @@ export const getCurrentUser = createAsyncThunk(
     }
 );
 
+// Silent check for approval status (doesn't trigger loading state)
+export const checkApprovalStatus = createAsyncThunk(
+    'auth/checkApprovalStatus',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get('/auth/me');
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to check status');
+        }
+    }
+);
+
 // Async thunk for updating profile
 export const updateProfile = createAsyncThunk(
     'auth/updateProfile',
@@ -190,6 +203,8 @@ const authSlice = createSlice({
             })
             // Get Current User
             .addCase(getCurrentUser.pending, (state) => {
+                // Set loading true to prevent routing before auth check completes
+                state.isLoading = true;
                 state.error = null;
             })
             .addCase(getCurrentUser.fulfilled, (state, action) => {
@@ -221,6 +236,13 @@ const authSlice = createSlice({
             .addCase(updateProfile.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload;
+            })
+            // Check Approval Status (silent - no loading state)
+            .addCase(checkApprovalStatus.fulfilled, (state, action) => {
+                state.user = action.payload.data.user;
+                state.organization = action.payload.data.organization;
+                state.isAuthenticated = true;
+                localStorage.setItem('user', JSON.stringify(action.payload.data.user));
             });
     },
 });

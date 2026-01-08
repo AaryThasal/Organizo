@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { joinOrganization, clearError, getCurrentUser } from '../../store/authSlice';
+import { joinOrganization, clearError, getCurrentUser, checkApprovalStatus } from '../../store/authSlice';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
@@ -30,19 +30,20 @@ function JoinOrganizationPage() {
         }
     }, [user, checkAndRedirect]);
 
-    // Poll for approval status every 5 seconds
+    // Poll for approval status every 5 seconds (silently without loading state)
     useEffect(() => {
         if (!submitted) return;
 
         const interval = setInterval(async () => {
-            const result = await dispatch(getCurrentUser());
+            const result = await dispatch(checkApprovalStatus());
             if (result.payload?.data?.user?.status === 'approved') {
                 clearInterval(interval);
                 navigate('/dashboard', { replace: true });
             }
         }, 5000);
 
-        dispatch(getCurrentUser());
+        // Initial check
+        dispatch(checkApprovalStatus());
         return () => clearInterval(interval);
     }, [submitted, dispatch, navigate]);
 
