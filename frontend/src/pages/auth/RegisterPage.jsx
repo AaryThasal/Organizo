@@ -1,7 +1,3 @@
-// ===========================================
-// Register Page
-// ===========================================
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,13 +16,12 @@ function RegisterPage() {
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'employee', // Default role
-        organizationName: '', // Only for admin
+        role: 'employee',
+        organizationName: '',
     });
 
     const [validationError, setValidationError] = useState('');
 
-    // Redirect after registration
     useEffect(() => {
         if (isAuthenticated && user) {
             if (user.role === 'admin') {
@@ -37,7 +32,6 @@ function RegisterPage() {
         }
     }, [isAuthenticated, user, navigate]);
 
-    // Clear errors on unmount
     useEffect(() => {
         return () => {
             dispatch(clearError());
@@ -56,20 +50,17 @@ function RegisterPage() {
         e.preventDefault();
         setValidationError('');
 
-        // Validate passwords match
         if (formData.password !== formData.confirmPassword) {
             setValidationError('Passwords do not match');
             return;
         }
 
-        // Validate password length
         if (formData.password.length < 6) {
             setValidationError('Password must be at least 6 characters');
             return;
         }
 
         if (formData.role === 'admin') {
-            // Admin registration
             dispatch(registerAdmin({
                 organizationName: formData.organizationName,
                 firstName: formData.firstName,
@@ -78,7 +69,6 @@ function RegisterPage() {
                 password: formData.password,
             }));
         } else {
-            // Manager/Employee registration
             dispatch(registerUser({
                 firstName: formData.firstName,
                 lastName: formData.lastName,
@@ -92,7 +82,6 @@ function RegisterPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
-                {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
                         <span className="text-3xl font-bold text-white">O</span>
@@ -101,7 +90,6 @@ function RegisterPage() {
                     <p className="text-primary-200 mt-2">Get started with Organizo</p>
                 </div>
 
-                {/* Register Form */}
                 <div className="bg-white rounded-2xl shadow-medium p-8">
                     <form onSubmit={handleSubmit}>
                         {(error || validationError) && (
@@ -110,7 +98,6 @@ function RegisterPage() {
                             </div>
                         )}
 
-                        {/* Role Selection */}
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-secondary-700 mb-3">
                                 I want to register as
@@ -122,8 +109,8 @@ function RegisterPage() {
                                         type="button"
                                         onClick={() => setFormData({ ...formData, role })}
                                         className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${formData.role === role
-                                                ? 'border-primary-500 bg-primary-50 text-primary-700'
-                                                : 'border-secondary-200 text-secondary-600 hover:border-secondary-300'
+                                            ? 'border-primary-500 bg-primary-50 text-primary-700'
+                                            : 'border-secondary-200 text-secondary-600 hover:border-secondary-300'
                                             }`}
                                     >
                                         {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -132,7 +119,6 @@ function RegisterPage() {
                             </div>
                         </div>
 
-                        {/* Organization name (only for admin) */}
                         {formData.role === 'admin' && (
                             <Input
                                 label="Organization Name"
@@ -145,7 +131,6 @@ function RegisterPage() {
                             />
                         )}
 
-                        {/* Name fields */}
                         <div className="grid grid-cols-2 gap-4">
                             <Input
                                 label="First Name"

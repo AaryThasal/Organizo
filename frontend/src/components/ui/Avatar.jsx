@@ -1,8 +1,5 @@
-// Avatar Component - shows profile image or initials fallback
-
 import React from 'react';
 
-// Color palette for avatars based on first letter of name
 const avatarColors = {
     A: 'bg-red-500',
     B: 'bg-orange-500',
@@ -32,6 +29,13 @@ const avatarColors = {
     Z: 'bg-pink-600',
 };
 
+const sizeClasses = {
+    sm: 'w-8 h-8 text-xs',
+    md: 'w-10 h-10 text-sm',
+    lg: 'w-12 h-12 text-base',
+    xl: 'w-16 h-16 text-xl',
+};
+
 function getAvatarColor(name) {
     if (!name) return 'bg-secondary-500';
     const firstLetter = name.charAt(0).toUpperCase();
@@ -44,19 +48,10 @@ function getInitials(firstName, lastName) {
     return first + last || '?';
 }
 
-// Size classes for both image and initials
-const sizeClasses = {
-    sm: 'w-8 h-8 text-xs',
-    md: 'w-10 h-10 text-sm',
-    lg: 'w-12 h-12 text-base',
-    xl: 'w-16 h-16 text-xl',
-};
-
 function Avatar({ firstName, lastName, profileImageUrl, size = 'md', className = '' }) {
     const sizeClass = sizeClasses[size] || sizeClasses.md;
     const fullName = `${firstName || ''} ${lastName || ''}`.trim();
 
-    // If profile image URL exists, show image
     if (profileImageUrl) {
         return (
             <img
@@ -68,7 +63,6 @@ function Avatar({ firstName, lastName, profileImageUrl, size = 'md', className =
         );
     }
 
-    // Otherwise show initials
     const initials = getInitials(firstName, lastName);
     const colorClass = getAvatarColor(firstName);
 

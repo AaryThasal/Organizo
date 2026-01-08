@@ -1,13 +1,14 @@
-// ===========================================
-// Modal Component
-// ===========================================
-// Reusable modal dialog
-
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
+const sizeClasses = {
+    sm: 'max-w-sm',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+};
+
 function Modal({ isOpen, onClose, title, children, size = 'md' }) {
-    // Close modal on escape key
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape') {
@@ -17,7 +18,6 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
 
         if (isOpen) {
             document.addEventListener('keydown', handleEscape);
-            // Prevent body scroll when modal is open
             document.body.style.overflow = 'hidden';
         }
 
@@ -29,19 +29,10 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
 
     if (!isOpen) return null;
 
-    // Size classes
-    const sizeClasses = {
-        sm: 'max-w-sm',
-        md: 'max-w-lg',
-        lg: 'max-w-2xl',
-        xl: 'max-w-4xl',
-    };
-
     const modalContent = (
         <div
             className="fixed inset-0 bg-secondary-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={(e) => {
-                // Close when clicking overlay
                 if (e.target === e.currentTarget) {
                     onClose();
                 }
@@ -51,7 +42,6 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
                 className={`bg-white rounded-2xl shadow-medium w-full ${sizeClasses[size] || sizeClasses.md} max-h-[90vh] overflow-hidden animate-scale-in`}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-100">
                     <h2 className="text-lg font-semibold text-secondary-900">{title}</h2>
                     <button
@@ -65,7 +55,6 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
                     </button>
                 </div>
 
-                {/* Content */}
                 <div className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-8rem)]">
                     {children}
                 </div>
@@ -73,7 +62,6 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
         </div>
     );
 
-    // Render modal in portal
     return createPortal(modalContent, document.body);
 }
 

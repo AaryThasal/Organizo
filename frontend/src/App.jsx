@@ -1,5 +1,3 @@
-// Main Application Component
-
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider, useSelector, useDispatch } from 'react-redux';
@@ -27,6 +25,7 @@ function AppContent() {
   const dispatch = useDispatch();
   const { isAuthenticated, isLoading, user } = useSelector((state) => state.auth);
 
+  // Restore auth state on page load
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token && !user) {
@@ -38,7 +37,6 @@ function AppContent() {
     return <LoadingScreen message="Loading your account..." />;
   }
 
-  // Redirect authenticated users based on role and status
   const getAuthenticatedRedirect = () => {
     if (!user) return '/dashboard';
     if (user.role === 'admin') return '/dashboard';
@@ -49,7 +47,6 @@ function AppContent() {
   return (
     <>
       <Routes>
-        {/* Public Routes */}
         <Route path="/login" element={
           isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <LoginPage />
         } />
@@ -62,7 +59,6 @@ function AppContent() {
           </ProtectedRoute>
         } />
 
-        {/* Dashboard Routes */}
         <Route element={
           <ProtectedRoute>
             <DashboardLayout />
@@ -85,7 +81,6 @@ function AppContent() {
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
-        {/* Default redirect - check auth before redirecting */}
         <Route path="/" element={
           isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <Navigate to="/login" replace />
         } />
@@ -94,13 +89,11 @@ function AppContent() {
         } />
       </Routes>
 
-      {/* Global Toast */}
       <Toast />
     </>
   );
 }
 
-// Main App with Redux Provider and Router
 function App() {
   return (
     <Provider store={store}>

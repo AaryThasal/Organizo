@@ -1,14 +1,8 @@
-// ===========================================
-// Sidebar Component
-// ===========================================
-// Dashboard sidebar navigation
-
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../store/authSlice';
 
-// Navigation items for each role
 const getNavItems = (role) => {
     const commonItems = [
         {
@@ -140,7 +134,6 @@ function Sidebar() {
                 }`}
         >
             <div className="flex flex-col h-full">
-                {/* Logo */}
                 <div className="h-16 flex items-center px-6 border-b border-secondary-100">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
@@ -152,7 +145,6 @@ function Sidebar() {
                     </div>
                 </div>
 
-                {/* Navigation */}
                 <nav className="flex-1 py-6 px-4 overflow-y-auto">
                     <ul className="space-y-1">
                         {navItems.map((item) => (
@@ -174,7 +166,6 @@ function Sidebar() {
                     </ul>
                 </nav>
 
-                {/* Logout */}
                 <div className="p-4 border-t border-secondary-100">
                     <button
                         onClick={handleLogout}

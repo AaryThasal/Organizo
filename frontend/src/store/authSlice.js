@@ -1,9 +1,6 @@
-// Auth Slice - manages user authentication state
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../services/api';
 
-// Get user data from localStorage if exists
 const storedUser = localStorage.getItem('user');
 const storedToken = localStorage.getItem('token');
 
@@ -16,7 +13,6 @@ const initialState = {
     error: null,
 };
 
-// Async thunk for admin registration
 export const registerAdmin = createAsyncThunk(
     'auth/registerAdmin',
     async (userData, { rejectWithValue }) => {
@@ -29,7 +25,6 @@ export const registerAdmin = createAsyncThunk(
     }
 );
 
-// Async thunk for user registration (manager/employee)
 export const registerUser = createAsyncThunk(
     'auth/registerUser',
     async (userData, { rejectWithValue }) => {
@@ -42,7 +37,6 @@ export const registerUser = createAsyncThunk(
     }
 );
 
-// Async thunk for login
 export const login = createAsyncThunk(
     'auth/login',
     async (credentials, { rejectWithValue }) => {
@@ -55,7 +49,6 @@ export const login = createAsyncThunk(
     }
 );
 
-// Async thunk for joining organization
 export const joinOrganization = createAsyncThunk(
     'auth/joinOrganization',
     async (joinCode, { rejectWithValue }) => {
@@ -68,7 +61,6 @@ export const joinOrganization = createAsyncThunk(
     }
 );
 
-// Async thunk for getting current user
 export const getCurrentUser = createAsyncThunk(
     'auth/getCurrentUser',
     async (_, { rejectWithValue }) => {
@@ -81,7 +73,7 @@ export const getCurrentUser = createAsyncThunk(
     }
 );
 
-// Silent check for approval status (doesn't trigger loading state)
+// Polls without triggering loading state to avoid UI flicker
 export const checkApprovalStatus = createAsyncThunk(
     'auth/checkApprovalStatus',
     async (_, { rejectWithValue }) => {
@@ -94,7 +86,6 @@ export const checkApprovalStatus = createAsyncThunk(
     }
 );
 
-// Async thunk for updating profile
 export const updateProfile = createAsyncThunk(
     'auth/updateProfile',
     async (profileData, { rejectWithValue }) => {
@@ -111,7 +102,6 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        // Logout action
         logout: (state) => {
             state.user = null;
             state.organization = null;
@@ -121,18 +111,15 @@ const authSlice = createSlice({
             localStorage.removeItem('user');
             localStorage.removeItem('token');
         },
-        // Clear error
         clearError: (state) => {
             state.error = null;
         },
-        // Set organization (after joining)
         setOrganization: (state, action) => {
             state.organization = action.payload;
         },
     },
     extraReducers: (builder) => {
         builder
-            // Register Admin
             .addCase(registerAdmin.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -150,7 +137,6 @@ const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Register User
             .addCase(registerUser.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -167,7 +153,6 @@ const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Login
             .addCase(login.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -185,7 +170,6 @@ const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Join Organization
             .addCase(joinOrganization.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -201,9 +185,7 @@ const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Get Current User
             .addCase(getCurrentUser.pending, (state) => {
-                // Set loading true to prevent routing before auth check completes
                 state.isLoading = true;
                 state.error = null;
             })
@@ -216,14 +198,12 @@ const authSlice = createSlice({
             })
             .addCase(getCurrentUser.rejected, (state, action) => {
                 state.isLoading = false;
-                // If getting user fails, logout
                 state.user = null;
                 state.token = null;
                 state.isAuthenticated = false;
                 localStorage.removeItem('user');
                 localStorage.removeItem('token');
             })
-            // Update Profile
             .addCase(updateProfile.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -237,7 +217,6 @@ const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Check Approval Status (silent - no loading state)
             .addCase(checkApprovalStatus.fulfilled, (state, action) => {
                 state.user = action.payload.data.user;
                 state.organization = action.payload.data.organization;

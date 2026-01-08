@@ -1,5 +1,3 @@
-// Settings Page - Profile, password, and organization settings
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateProfile, getCurrentUser } from '../../store/authSlice';
@@ -33,7 +31,7 @@ function SettingsPage() {
     const [savingPassword, setSavingPassword] = useState(false);
     const [savingOrg, setSavingOrg] = useState(false);
     const [regenerating, setRegenerating] = useState(false);
-    
+
     // Profile image states
     const [imagePreview, setImagePreview] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -111,9 +109,9 @@ function SettingsPage() {
             setSelectedFile(null);
             setImagePreview(null);
         } catch (error) {
-            dispatch(showToast({ 
-                type: 'error', 
-                message: error.response?.data?.message || 'Failed to upload image' 
+            dispatch(showToast({
+                type: 'error',
+                message: error.response?.data?.message || 'Failed to upload image'
             }));
         }
         setUploadingImage(false);
@@ -244,18 +242,18 @@ function SettingsPage() {
                     <div className="relative">
                         {imagePreview ? (
                             // Show preview of selected image
-                            <img 
-                                src={imagePreview} 
-                                alt="Preview" 
+                            <img
+                                src={imagePreview}
+                                alt="Preview"
                                 className="w-20 h-20 rounded-full object-cover border-2 border-primary-500"
                             />
                         ) : (
                             // Show current profile image or avatar
-                            <Avatar 
-                                firstName={user?.first_name} 
-                                lastName={user?.last_name} 
+                            <Avatar
+                                firstName={user?.first_name}
+                                lastName={user?.last_name}
                                 profileImageUrl={user?.profile_image_url}
-                                size="xl" 
+                                size="xl"
                             />
                         )}
                     </div>
@@ -266,7 +264,7 @@ function SettingsPage() {
                         </p>
                         <p className="text-sm text-secondary-500">{user?.email}</p>
                         <p className="text-xs text-secondary-400 capitalize mt-1">{user?.role}</p>
-                        
+
                         {/* Image Upload Controls */}
                         <div className="flex flex-wrap gap-2 mt-3">
                             {/* Hidden file input */}
@@ -281,16 +279,16 @@ function SettingsPage() {
                             {selectedFile ? (
                                 // Show upload/cancel when file is selected
                                 <>
-                                    <Button 
-                                        size="sm" 
+                                    <Button
+                                        size="sm"
                                         onClick={handleImageUpload}
                                         loading={uploadingImage}
                                     >
                                         Upload Image
                                     </Button>
-                                    <Button 
-                                        size="sm" 
-                                        variant="secondary" 
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
                                         onClick={handleCancelImage}
                                         disabled={uploadingImage}
                                     >
@@ -300,16 +298,16 @@ function SettingsPage() {
                             ) : (
                                 // Show choose/remove buttons
                                 <>
-                                    <Button 
-                                        size="sm" 
+                                    <Button
+                                        size="sm"
                                         variant="secondary"
                                         onClick={() => fileInputRef.current?.click()}
                                     >
                                         {user?.profile_image_url ? 'Change Photo' : 'Upload Photo'}
                                     </Button>
                                     {user?.profile_image_url && (
-                                        <Button 
-                                            size="sm" 
+                                        <Button
+                                            size="sm"
                                             variant="danger"
                                             onClick={handleRemoveImage}
                                             loading={removingImage}

@@ -1,8 +1,5 @@
-// useRefreshOnFocus - refreshes data when page gains focus
-
 import { useEffect, useCallback, useRef } from 'react';
 
-// Calls refresh function on window focus with throttling
 export function useRefreshOnFocus(onRefresh, options = {}) {
     const { enabled = true, throttleMs = 5000 } = options;
     const lastRefreshRef = useRef(0);
@@ -38,7 +35,6 @@ export function useRefreshOnFocus(onRefresh, options = {}) {
     }, [enabled, throttledRefresh]);
 }
 
-// Polls data at interval (only when page is visible)
 export function usePolling(onPoll, intervalMs, options = {}) {
     const { enabled = true } = options;
 

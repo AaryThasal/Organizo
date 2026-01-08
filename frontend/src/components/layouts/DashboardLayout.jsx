@@ -1,8 +1,3 @@
-// ===========================================
-// Dashboard Layout Component
-// ===========================================
-// Main layout wrapper for dashboard pages
-
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -14,13 +9,9 @@ function DashboardLayout() {
 
     return (
         <div className="min-h-screen bg-secondary-50">
-            {/* Sidebar */}
             <Sidebar />
-
-            {/* Navbar */}
             <Navbar />
 
-            {/* Main Content */}
             <main
                 className={`pt-16 min-h-screen transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'
                     }`}

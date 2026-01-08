@@ -1,7 +1,3 @@
-// ===========================================
-// Projects List Page
-// ===========================================
-
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -62,7 +58,6 @@ function ProjectsPage() {
         }
     };
 
-    // Filter projects
     const filteredProjects = filter === 'all'
         ? projects
         : projects.filter(p => p.status === filter);
@@ -77,7 +72,6 @@ function ProjectsPage() {
 
     return (
         <div className="animate-fade-in">
-            {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div>
                     <h1 className="page-title">Projects</h1>
@@ -94,7 +88,6 @@ function ProjectsPage() {
                 )}
             </div>
 
-            {/* Filters */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
                 {[
                     { value: 'all', label: 'All' },
@@ -106,8 +99,8 @@ function ProjectsPage() {
                         key={f.value}
                         onClick={() => setFilter(f.value)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === f.value
-                                ? 'bg-primary-100 text-primary-700'
-                                : 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200'
+                            ? 'bg-primary-100 text-primary-700'
+                            : 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200'
                             }`}
                     >
                         {f.label}
@@ -115,7 +108,6 @@ function ProjectsPage() {
                 ))}
             </div>
 
-            {/* Projects Grid */}
             {filteredProjects.length === 0 ? (
                 <EmptyState
                     icon={
@@ -184,7 +176,6 @@ function ProjectsPage() {
                 </div>
             )}
 
-            {/* Create Project Modal */}
             <Modal
                 isOpen={activeModal === 'createProject'}
                 onClose={() => dispatch(closeModal())}

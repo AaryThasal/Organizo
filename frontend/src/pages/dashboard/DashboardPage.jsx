@@ -1,5 +1,3 @@
-// Dashboard Page - main dashboard with role-specific content
-
 import React, { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -10,7 +8,6 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Avatar from '../../components/ui/Avatar';
 import Spinner from '../../components/ui/Spinner';
 
-// Stats Card Component
 function StatsCard({ icon, label, value, colorClass }) {
     return (
         <div className="card flex items-center gap-4">
@@ -53,7 +50,7 @@ function DashboardPage() {
         refreshDashboardData();
     }, [refreshDashboardData]);
 
-    // Refetch data when window gains focus
+    // Refetch on focus to keep data fresh
     useEffect(() => {
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
@@ -76,7 +73,6 @@ function DashboardPage() {
 
     const fetchStats = async () => {
         try {
-            // Fetch user count for admins and managers
             if (user?.role === 'admin' || user?.role === 'manager') {
                 const usersRes = await api.get('/users?status=approved');
                 setStats(prev => ({
@@ -85,7 +81,6 @@ function DashboardPage() {
                 }));
             }
 
-            // Fetch pending requests for admins
             if (user?.role === 'admin') {
                 const pendingRes = await api.get('/users/pending');
                 setStats(prev => ({
@@ -100,7 +95,6 @@ function DashboardPage() {
         }
     };
 
-    // Calculate task stats
     const taskStats = {
         todo: myTasks.filter(t => t.status === 'to-do').length,
         inProgress: myTasks.filter(t => t.status === 'in-progress').length,
@@ -124,7 +118,6 @@ function DashboardPage() {
 
     return (
         <div className="animate-fade-in">
-            {/* Page Header */}
             <div className="page-header">
                 <h1 className="page-title">
                     Welcome back, {user?.first_name}! 👋
@@ -134,7 +127,6 @@ function DashboardPage() {
                 </p>
             </div>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatsCard
                     icon={
@@ -206,9 +198,7 @@ function DashboardPage() {
                 )}
             </div>
 
-            {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Recent Projects */}
                 <div className="card">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold text-secondary-900">Recent Projects</h2>
@@ -247,7 +237,6 @@ function DashboardPage() {
                     )}
                 </div>
 
-                {/* Tasks or Pending Requests */}
                 {user?.role === 'employee' ? (
                     <div className="card">
                         <div className="flex items-center justify-between mb-4">

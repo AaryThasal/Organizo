@@ -1,8 +1,3 @@
-// ===========================================
-// Projects Slice
-// ===========================================
-// Manages project-related state
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../services/api';
 
@@ -14,7 +9,6 @@ const initialState = {
     error: null,
 };
 
-// Get all projects
 export const fetchProjects = createAsyncThunk(
     'projects/fetchProjects',
     async (filters = {}, { rejectWithValue }) => {
@@ -28,7 +22,6 @@ export const fetchProjects = createAsyncThunk(
     }
 );
 
-// Get single project
 export const fetchProjectById = createAsyncThunk(
     'projects/fetchProjectById',
     async (projectId, { rejectWithValue }) => {
@@ -41,7 +34,6 @@ export const fetchProjectById = createAsyncThunk(
     }
 );
 
-// Create project
 export const createProject = createAsyncThunk(
     'projects/createProject',
     async (projectData, { rejectWithValue }) => {
@@ -54,7 +46,6 @@ export const createProject = createAsyncThunk(
     }
 );
 
-// Update project
 export const updateProject = createAsyncThunk(
     'projects/updateProject',
     async ({ projectId, projectData }, { rejectWithValue }) => {
@@ -67,7 +58,6 @@ export const updateProject = createAsyncThunk(
     }
 );
 
-// Delete project
 export const deleteProject = createAsyncThunk(
     'projects/deleteProject',
     async (projectId, { rejectWithValue }) => {
@@ -80,7 +70,6 @@ export const deleteProject = createAsyncThunk(
     }
 );
 
-// Get project members
 export const fetchProjectMembers = createAsyncThunk(
     'projects/fetchProjectMembers',
     async (projectId, { rejectWithValue }) => {
@@ -93,12 +82,10 @@ export const fetchProjectMembers = createAsyncThunk(
     }
 );
 
-// Add project member(s) - supports single userId or bulk userIds array
 export const addProjectMember = createAsyncThunk(
     'projects/addProjectMember',
     async ({ projectId, userId, userIds }, { rejectWithValue }) => {
         try {
-            // Send userIds array if provided, otherwise single userId
             const payload = userIds ? { userIds } : { userId };
             const response = await api.post(`/projects/${projectId}/members`, payload);
             return response.data;
@@ -108,7 +95,6 @@ export const addProjectMember = createAsyncThunk(
     }
 );
 
-// Remove project member
 export const removeProjectMember = createAsyncThunk(
     'projects/removeProjectMember',
     async ({ projectId, userId }, { rejectWithValue }) => {
@@ -135,7 +121,6 @@ const projectSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Fetch Projects
             .addCase(fetchProjects.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -148,7 +133,6 @@ const projectSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Fetch Project By ID
             .addCase(fetchProjectById.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -162,7 +146,6 @@ const projectSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Create Project
             .addCase(createProject.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -175,7 +158,6 @@ const projectSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Update Project
             .addCase(updateProject.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -194,7 +176,6 @@ const projectSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Delete Project
             .addCase(deleteProject.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -210,15 +191,12 @@ const projectSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Fetch Project Members
             .addCase(fetchProjectMembers.fulfilled, (state, action) => {
                 state.projectMembers = action.payload.data;
             })
-            // Add Project Member
             .addCase(addProjectMember.fulfilled, (state) => {
                 // Members will be refetched
             })
-            // Remove Project Member
             .addCase(removeProjectMember.fulfilled, (state, action) => {
                 state.projectMembers = state.projectMembers.filter(
                     m => m.id !== action.payload.userId

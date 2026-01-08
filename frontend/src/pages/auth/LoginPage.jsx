@@ -1,7 +1,3 @@
-// ===========================================
-// Login Page
-// ===========================================
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,10 +15,8 @@ function LoginPage() {
         password: '',
     });
 
-    // Redirect if already authenticated
     useEffect(() => {
         if (isAuthenticated && user) {
-            // Check if user needs to join an organization
             if (!user.organization_id && user.role !== 'admin') {
                 navigate('/join-organization');
             } else if (user.status === 'pending') {
@@ -33,7 +27,6 @@ function LoginPage() {
         }
     }, [isAuthenticated, user, navigate]);
 
-    // Clear errors on unmount
     useEffect(() => {
         return () => {
             dispatch(clearError());
@@ -55,7 +48,6 @@ function LoginPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
-                {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
                         <span className="text-3xl font-bold text-white">O</span>
@@ -64,7 +56,6 @@ function LoginPage() {
                     <p className="text-primary-200 mt-2">Sign in to your account</p>
                 </div>
 
-                {/* Login Form */}
                 <div className="bg-white rounded-2xl shadow-medium p-8">
                     <form onSubmit={handleSubmit}>
                         {error && (

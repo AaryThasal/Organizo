@@ -1,5 +1,3 @@
-// Project Detail Page - shows project info, team, and tasks
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -28,7 +26,7 @@ function ProjectDetailPage() {
     const { activeModal, modalData } = useSelector((state) => state.ui);
 
     const [availableUsers, setAvailableUsers] = useState([]);
-    const [selectedUserIds, setSelectedUserIds] = useState([]); // Changed to array for bulk selection
+    const [selectedUserIds, setSelectedUserIds] = useState([]);
     const [taskForm, setTaskForm] = useState({
         title: '',
         description: '',
@@ -68,7 +66,6 @@ function ProjectDetailPage() {
         }
     };
 
-    // Handle bulk member addition
     const handleAddMembers = async () => {
         if (selectedUserIds.length === 0) return;
 
@@ -148,7 +145,6 @@ function ProjectDetailPage() {
         );
     }
 
-    // Group tasks by status
     const tasksByStatus = {
         'to-do': tasks.filter(t => t.status === 'to-do'),
         'in-progress': tasks.filter(t => t.status === 'in-progress'),
@@ -158,7 +154,6 @@ function ProjectDetailPage() {
 
     return (
         <div className="animate-fade-in">
-            {/* Project Header */}
             <div className="card mb-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
@@ -202,7 +197,6 @@ function ProjectDetailPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                {/* Team Members */}
                 <div className="lg:col-span-1">
                     <div className="card">
                         <h2 className="text-lg font-semibold text-secondary-900 mb-4">Team Members</h2>
@@ -240,12 +234,10 @@ function ProjectDetailPage() {
                     </div>
                 </div>
 
-                {/* Tasks Section - Clean list layout grouped by status */}
                 <div className="lg:col-span-3">
                     <div className="card">
                         <h2 className="text-lg font-semibold text-secondary-900 mb-6">Tasks</h2>
 
-                        {/* Task count summary - quick overview */}
                         <div className="flex flex-wrap gap-3 mb-6 pb-4 border-b border-secondary-100">
                             {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
                                 <div key={status} className="flex items-center gap-2">
@@ -257,12 +249,10 @@ function ProjectDetailPage() {
                             ))}
                         </div>
 
-                        {/* Task list - grouped by status */}
                         <div className="space-y-6">
                             {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
                                 statusTasks.length > 0 && (
                                     <div key={status}>
-                                        {/* Status section header */}
                                         <div className="flex items-center gap-2 mb-3">
                                             <StatusBadge status={status} type="task" />
                                             <span className="text-xs text-secondary-400">
@@ -270,14 +260,12 @@ function ProjectDetailPage() {
                                             </span>
                                         </div>
 
-                                        {/* Tasks in this status */}
                                         <div className="space-y-2">
                                             {statusTasks.map((task) => (
                                                 <div
                                                     key={task.id}
                                                     className="flex items-center gap-4 p-4 bg-secondary-50 rounded-xl hover:bg-secondary-100 transition-colors group"
                                                 >
-                                                    {/* Task title and description */}
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-sm font-medium text-secondary-900 truncate">
                                                             {task.title}
@@ -289,7 +277,6 @@ function ProjectDetailPage() {
                                                         )}
                                                     </div>
 
-                                                    {/* Due date */}
                                                     {task.due_date && (
                                                         <div className="hidden sm:flex items-center gap-1.5 text-xs text-secondary-500 shrink-0">
                                                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -299,7 +286,6 @@ function ProjectDetailPage() {
                                                         </div>
                                                     )}
 
-                                                    {/* Assignees */}
                                                     <div className="shrink-0">
                                                         {task.assignees && task.assignees.length > 0 ? (
                                                             <div className="flex -space-x-2">
@@ -323,7 +309,6 @@ function ProjectDetailPage() {
                                                         )}
                                                     </div>
 
-                                                    {/* Status dropdown - compact */}
                                                     {(canManage || (task.assignees && task.assignees.some(a => a.id === user?.id))) && (
                                                         <select
                                                             value={task.status}
@@ -337,7 +322,6 @@ function ProjectDetailPage() {
                                                         </select>
                                                     )}
 
-                                                    {/* Delete button - managers only */}
                                                     {canManage && (
                                                         <button
                                                             onClick={() => handleDeleteTask(task.id, task.title)}
@@ -355,7 +339,6 @@ function ProjectDetailPage() {
                                 )
                             ))}
 
-                            {/* Empty state when no tasks exist */}
                             {tasks.length === 0 && (
                                 <div className="text-center py-8">
                                     <svg className="w-12 h-12 mx-auto text-secondary-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -372,7 +355,6 @@ function ProjectDetailPage() {
                 </div>
             </div>
 
-            {/* Add Member Modal - Multi-select with checkboxes */}
             <Modal
                 isOpen={activeModal === 'addMember'}
                 onClose={() => {
@@ -451,7 +433,6 @@ function ProjectDetailPage() {
                 </div>
             </Modal>
 
-            {/* Create Task Modal */}
             <Modal
                 isOpen={activeModal === 'createTask'}
                 onClose={() => dispatch(closeModal())}
@@ -478,7 +459,6 @@ function ProjectDetailPage() {
                         />
                     </div>
 
-                    {/* Multi-select for assignees */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-secondary-700 mb-1.5">
                             Assign To (select multiple)

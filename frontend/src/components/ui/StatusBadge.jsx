@@ -1,11 +1,5 @@
-// ===========================================
-// Status Badge Component
-// ===========================================
-// Displays colored badges for status values
-
 import React from 'react';
 
-// Status configurations for tasks
 const taskStatusConfig = {
     'to-do': {
         label: 'To Do',
@@ -25,7 +19,6 @@ const taskStatusConfig = {
     },
 };
 
-// Status configurations for projects
 const projectStatusConfig = {
     'active': {
         label: 'Active',
@@ -41,7 +34,6 @@ const projectStatusConfig = {
     },
 };
 
-// User status configurations
 const userStatusConfig = {
     'pending': {
         label: 'Pending',
@@ -57,7 +49,6 @@ const userStatusConfig = {
     },
 };
 
-// Role configurations
 const roleConfig = {
     'admin': {
         label: 'Admin',
@@ -74,7 +65,6 @@ const roleConfig = {
 };
 
 function StatusBadge({ status, type = 'task', className = '' }) {
-    // Get the right config based on type
     let config;
     switch (type) {
         case 'project':
@@ -91,7 +81,6 @@ function StatusBadge({ status, type = 'task', className = '' }) {
             config = taskStatusConfig[status];
     }
 
-    // Fallback for unknown status
     if (!config) {
         config = {
             label: status,

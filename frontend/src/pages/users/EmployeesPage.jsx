@@ -1,7 +1,3 @@
-// ===========================================
-// Employees List Page
-// ===========================================
-
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import api from '../../services/api';
@@ -31,7 +27,6 @@ function EmployeesPage() {
         }
     };
 
-    // Filter employees
     const filteredEmployees = filter === 'all'
         ? employees
         : employees.filter(e => e.role === filter);
@@ -46,13 +41,11 @@ function EmployeesPage() {
 
     return (
         <div className="animate-fade-in">
-            {/* Page Header */}
             <div className="page-header">
                 <h1 className="page-title">Team Members</h1>
                 <p className="page-description">View all members in your organization</p>
             </div>
 
-            {/* Filters */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
                 {[
                     { value: 'all', label: 'All' },
@@ -64,8 +57,8 @@ function EmployeesPage() {
                         key={f.value}
                         onClick={() => setFilter(f.value)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === f.value
-                                ? 'bg-primary-100 text-primary-700'
-                                : 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200'
+                            ? 'bg-primary-100 text-primary-700'
+                            : 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200'
                             }`}
                     >
                         {f.label}
@@ -73,7 +66,6 @@ function EmployeesPage() {
                 ))}
             </div>
 
-            {/* Employee Cards */}
             {filteredEmployees.length === 0 ? (
                 <EmptyState
                     icon={

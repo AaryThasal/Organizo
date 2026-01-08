@@ -1,8 +1,3 @@
-// ===========================================
-// Notification Slice
-// ===========================================
-// Manages notification state
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../services/api';
 
@@ -13,7 +8,6 @@ const initialState = {
     error: null,
 };
 
-// Fetch notifications
 export const fetchNotifications = createAsyncThunk(
     'notifications/fetchNotifications',
     async (unreadOnly = false, { rejectWithValue }) => {
@@ -26,7 +20,6 @@ export const fetchNotifications = createAsyncThunk(
     }
 );
 
-// Mark notification as read
 export const markAsRead = createAsyncThunk(
     'notifications/markAsRead',
     async (notificationId, { rejectWithValue }) => {
@@ -39,7 +32,6 @@ export const markAsRead = createAsyncThunk(
     }
 );
 
-// Mark all as read
 export const markAllAsRead = createAsyncThunk(
     'notifications/markAllAsRead',
     async (_, { rejectWithValue }) => {
@@ -63,7 +55,6 @@ const notificationSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Fetch Notifications
             .addCase(fetchNotifications.pending, (state) => {
                 state.isLoading = true;
             })
@@ -76,7 +67,6 @@ const notificationSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Mark As Read
             .addCase(markAsRead.fulfilled, (state, action) => {
                 const notification = state.notifications.find(n => n.id === action.payload);
                 if (notification && !notification.is_read) {
@@ -84,7 +74,6 @@ const notificationSlice = createSlice({
                     state.unreadCount = Math.max(0, state.unreadCount - 1);
                 }
             })
-            // Mark All As Read
             .addCase(markAllAsRead.fulfilled, (state) => {
                 state.notifications.forEach(n => {
                     n.is_read = true;

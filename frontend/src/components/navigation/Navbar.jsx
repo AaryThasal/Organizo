@@ -1,8 +1,3 @@
-// ===========================================
-// Navbar Component
-// ===========================================
-// Top navigation bar with notifications and user menu
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
@@ -24,12 +19,11 @@ function Navbar() {
     const notificationRef = useRef(null);
     const userMenuRef = useRef(null);
 
-    // Fetch notifications on mount
     useEffect(() => {
         dispatch(fetchNotifications());
     }, [dispatch]);
 
-    // Close dropdowns when clicking outside
+    // Close dropdowns on outside click
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (notificationRef.current && !notificationRef.current.contains(e.target)) {
@@ -55,7 +49,6 @@ function Navbar() {
         }
         setShowNotifications(false);
 
-        // Navigate based on notification type
         const metadata = notification.metadata ? JSON.parse(notification.metadata) : {};
         if (metadata.projectId) {
             navigate(`/projects/${metadata.projectId}`);
@@ -70,7 +63,6 @@ function Navbar() {
                 }`}
         >
             <div className="h-full flex items-center justify-between px-6">
-                {/* Left side */}
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => dispatch(toggleSidebar())}
@@ -88,9 +80,7 @@ function Navbar() {
                     )}
                 </div>
 
-                {/* Right side */}
                 <div className="flex items-center gap-4">
-                    {/* Notifications */}
                     <div className="relative" ref={notificationRef}>
                         <button
                             onClick={() => setShowNotifications(!showNotifications)}
@@ -106,7 +96,6 @@ function Navbar() {
                             )}
                         </button>
 
-                        {/* Notifications dropdown */}
                         {showNotifications && (
                             <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-medium border border-secondary-100 py-2 z-50 animate-scale-in">
                                 <div className="flex items-center justify-between px-4 py-2 border-b border-secondary-100">
@@ -148,7 +137,6 @@ function Navbar() {
                         )}
                     </div>
 
-                    {/* User menu */}
                     <div className="relative" ref={userMenuRef}>
                         <button
                             onClick={() => setShowUserMenu(!showUserMenu)}
@@ -168,7 +156,6 @@ function Navbar() {
                             </svg>
                         </button>
 
-                        {/* User dropdown */}
                         {showUserMenu && (
                             <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-medium border border-secondary-100 py-2 z-50 animate-scale-in">
                                 <div className="px-4 py-2 border-b border-secondary-100">

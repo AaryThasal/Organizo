@@ -1,11 +1,5 @@
-// ===========================================
-// Button Component
-// ===========================================
-// Reusable button with variants
-
 import React from 'react';
 
-// Variant styles
 const variants = {
     primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-soft hover:shadow-medium',
     secondary: 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200 focus:ring-secondary-500 border border-secondary-200',
@@ -15,7 +9,6 @@ const variants = {
     outline: 'bg-transparent border-2 border-primary-600 text-primary-600 hover:bg-primary-50',
 };
 
-// Size styles
 const sizes = {
     sm: 'px-3 py-1.5 text-sm',
     md: 'px-4 py-2.5 text-sm',

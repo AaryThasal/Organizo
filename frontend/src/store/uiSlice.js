@@ -1,15 +1,10 @@
-// ===========================================
-// UI Slice
-// ===========================================
-// Manages UI-related state (modals, sidebar, etc.)
-
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
     sidebarOpen: true,
-    activeModal: null, // 'createProject', 'editProject', 'createTask', 'editTask', etc.
-    modalData: null, // Data to pass to the modal
-    toast: null, // { type: 'success' | 'error' | 'info', message: string }
+    activeModal: null,
+    modalData: null,
+    toast: null,
 };
 
 const uiSlice = createSlice({

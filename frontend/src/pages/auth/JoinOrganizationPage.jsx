@@ -1,5 +1,3 @@
-// Join Organization Page - for users to enter org code and wait for approval
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,7 +28,7 @@ function JoinOrganizationPage() {
         }
     }, [user, checkAndRedirect]);
 
-    // Poll for approval status every 5 seconds (silently without loading state)
+    // Poll silently to avoid UI flicker
     useEffect(() => {
         if (!submitted) return;
 
@@ -42,7 +40,6 @@ function JoinOrganizationPage() {
             }
         }, 5000);
 
-        // Initial check
         dispatch(checkApprovalStatus());
         return () => clearInterval(interval);
     }, [submitted, dispatch, navigate]);
@@ -65,7 +62,6 @@ function JoinOrganizationPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
-                {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
                         <span className="text-3xl font-bold text-white">O</span>
@@ -80,10 +76,8 @@ function JoinOrganizationPage() {
                     </p>
                 </div>
 
-                {/* Content */}
                 <div className="bg-white rounded-2xl shadow-medium p-8">
                     {submitted ? (
-                        // Pending approval state
                         <div className="text-center">
                             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-amber-100 flex items-center justify-center">
                                 <svg className="w-10 h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,7 +103,6 @@ function JoinOrganizationPage() {
                             </div>
                         </div>
                     ) : (
-                        // Join form
                         <form onSubmit={handleSubmit}>
                             {error && (
                                 <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">

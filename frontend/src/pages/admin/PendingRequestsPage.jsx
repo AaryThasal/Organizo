@@ -1,5 +1,3 @@
-// Pending Requests Page - Admin only, shows users pending approval
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { showToast } from '../../store/uiSlice';
@@ -72,13 +70,11 @@ function PendingRequestsPage() {
 
     return (
         <div className="animate-fade-in">
-            {/* Page Header */}
             <div className="page-header">
                 <h1 className="page-title">Pending Requests</h1>
                 <p className="page-description">Review and approve join requests</p>
             </div>
 
-            {/* Requests List */}
             {requests.length === 0 ? (
                 <EmptyState
                     icon={

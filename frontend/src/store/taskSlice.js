@@ -1,8 +1,3 @@
-// ===========================================
-// Tasks Slice
-// ===========================================
-// Manages task-related state
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../services/api';
 
@@ -14,7 +9,6 @@ const initialState = {
     error: null,
 };
 
-// Get tasks for a project
 export const fetchProjectTasks = createAsyncThunk(
     'tasks/fetchProjectTasks',
     async ({ projectId, filters = {} }, { rejectWithValue }) => {
@@ -28,7 +22,6 @@ export const fetchProjectTasks = createAsyncThunk(
     }
 );
 
-// Get my tasks
 export const fetchMyTasks = createAsyncThunk(
     'tasks/fetchMyTasks',
     async (filters = {}, { rejectWithValue }) => {
@@ -42,7 +35,6 @@ export const fetchMyTasks = createAsyncThunk(
     }
 );
 
-// Get single task
 export const fetchTaskById = createAsyncThunk(
     'tasks/fetchTaskById',
     async (taskId, { rejectWithValue }) => {
@@ -55,7 +47,6 @@ export const fetchTaskById = createAsyncThunk(
     }
 );
 
-// Create task
 export const createTask = createAsyncThunk(
     'tasks/createTask',
     async ({ projectId, taskData }, { rejectWithValue }) => {
@@ -68,7 +59,6 @@ export const createTask = createAsyncThunk(
     }
 );
 
-// Update task
 export const updateTask = createAsyncThunk(
     'tasks/updateTask',
     async ({ taskId, taskData }, { rejectWithValue }) => {
@@ -81,7 +71,6 @@ export const updateTask = createAsyncThunk(
     }
 );
 
-// Update task status
 export const updateTaskStatus = createAsyncThunk(
     'tasks/updateTaskStatus',
     async ({ taskId, status }, { rejectWithValue }) => {
@@ -94,7 +83,6 @@ export const updateTaskStatus = createAsyncThunk(
     }
 );
 
-// Delete task
 export const deleteTask = createAsyncThunk(
     'tasks/deleteTask',
     async (taskId, { rejectWithValue }) => {
@@ -123,7 +111,6 @@ const taskSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Fetch Project Tasks
             .addCase(fetchProjectTasks.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -136,7 +123,6 @@ const taskSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Fetch My Tasks
             .addCase(fetchMyTasks.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -149,11 +135,9 @@ const taskSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Fetch Task By ID
             .addCase(fetchTaskById.fulfilled, (state, action) => {
                 state.currentTask = action.payload.data;
             })
-            // Create Task
             .addCase(createTask.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -166,7 +150,6 @@ const taskSlice = createSlice({
                 state.isLoading = false;
                 state.error = action.payload;
             })
-            // Update Task
             .addCase(updateTask.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(t => t.id === action.payload.data.id);
                 if (index !== -1) {
@@ -177,7 +160,6 @@ const taskSlice = createSlice({
                     state.myTasks[myIndex] = action.payload.data;
                 }
             })
-            // Update Task Status
             .addCase(updateTaskStatus.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(t => t.id === action.payload.data.id);
                 if (index !== -1) {
@@ -188,7 +170,6 @@ const taskSlice = createSlice({
                     state.myTasks[myIndex] = action.payload.data;
                 }
             })
-            // Delete Task
             .addCase(deleteTask.fulfilled, (state, action) => {
                 state.tasks = state.tasks.filter(t => t.id !== action.payload);
                 state.myTasks = state.myTasks.filter(t => t.id !== action.payload);

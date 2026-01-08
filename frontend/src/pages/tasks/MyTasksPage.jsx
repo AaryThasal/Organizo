@@ -1,5 +1,3 @@
-// My Tasks Page - shows tasks assigned to current user
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';

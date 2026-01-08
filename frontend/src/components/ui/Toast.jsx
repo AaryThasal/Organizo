@@ -1,13 +1,7 @@
-// ===========================================
-// Toast Component
-// ===========================================
-// Toast notification display
-
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { hideToast } from '../../store/uiSlice';
 
-// Icon components for different toast types
 const icons = {
     success: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -31,7 +25,6 @@ const icons = {
     ),
 };
 
-// Color classes for different toast types
 const colorClasses = {
     success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
     error: 'bg-red-50 border-red-200 text-red-800',
@@ -50,7 +43,6 @@ function Toast() {
     const dispatch = useDispatch();
     const toast = useSelector((state) => state.ui.toast);
 
-    // Auto-hide toast after 5 seconds
     useEffect(() => {
         if (toast) {
             const timer = setTimeout(() => {
