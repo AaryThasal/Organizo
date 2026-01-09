@@ -8,6 +8,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Avatar from '../../components/ui/Avatar';
 import Spinner from '../../components/ui/Spinner';
 
+// Reusable stats card for dashboard metrics
 function StatsCard({ icon, label, value, colorClass }) {
     return (
         <div className="card flex items-center gap-4">
@@ -22,6 +23,7 @@ function StatsCard({ icon, label, value, colorClass }) {
     );
 }
 
+// Main dashboard with role-specific content
 function DashboardPage() {
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
@@ -38,6 +40,7 @@ function DashboardPage() {
     const [recentActivity, setRecentActivity] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
 
+    // Fetch all dashboard data
     const refreshDashboardData = useCallback(async () => {
         dispatch(fetchProjects());
         if (user?.role === 'employee') {
@@ -71,6 +74,7 @@ function DashboardPage() {
         };
     }, [refreshDashboardData]);
 
+    // Fetch team and pending request counts
     const fetchStats = async () => {
         try {
             if (user?.role === 'admin' || user?.role === 'manager') {
@@ -95,6 +99,7 @@ function DashboardPage() {
         }
     };
 
+    // Calculate task counts by status
     const taskStats = {
         todo: myTasks.filter(t => t.status === 'to-do').length,
         inProgress: myTasks.filter(t => t.status === 'in-progress').length,
@@ -102,6 +107,7 @@ function DashboardPage() {
         onHold: myTasks.filter(t => t.status === 'on-hold').length,
     };
 
+    // Calculate project counts by status
     const projectStats = {
         active: projects.filter(p => p.status === 'active').length,
         completed: projects.filter(p => p.status === 'completed').length,

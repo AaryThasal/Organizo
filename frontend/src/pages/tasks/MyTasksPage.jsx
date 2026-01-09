@@ -9,6 +9,7 @@ import Button from '../../components/ui/Button';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 
+// Employee's assigned tasks grouped by project
 function MyTasksPage() {
     const dispatch = useDispatch();
     const { myTasks, isLoading } = useSelector((state) => state.tasks);
@@ -24,6 +25,7 @@ function MyTasksPage() {
 
     useRefreshOnFocus(refreshTasks);
 
+    // Update task status
     const handleStatusChange = async (taskId, newStatus) => {
         const result = await dispatch(updateTaskStatus({ taskId, status: newStatus }));
         if (!result.error) {

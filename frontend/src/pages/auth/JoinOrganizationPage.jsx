@@ -5,6 +5,7 @@ import { joinOrganization, clearError, getCurrentUser, checkApprovalStatus } fro
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
+// Page for joining org with code and waiting for approval
 function JoinOrganizationPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ function JoinOrganizationPage() {
     const [joinCode, setJoinCode] = useState('');
     const [submitted, setSubmitted] = useState(false);
 
+    // Redirect if already approved
     const checkAndRedirect = useCallback(() => {
         if (user?.status === 'approved' && user?.organization_id) {
             navigate('/dashboard', { replace: true });
@@ -48,6 +50,7 @@ function JoinOrganizationPage() {
         return () => { dispatch(clearError()); };
     }, [dispatch]);
 
+    // Submit join code
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!joinCode.trim()) return;

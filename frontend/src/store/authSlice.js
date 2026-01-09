@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../services/api';
 
+// Restore auth from localStorage on app start
 const storedUser = localStorage.getItem('user');
 const storedToken = localStorage.getItem('token');
 
@@ -13,6 +14,7 @@ const initialState = {
     error: null,
 };
 
+// Async thunks for API calls
 export const registerAdmin = createAsyncThunk(
     'auth/registerAdmin',
     async (userData, { rejectWithValue }) => {
@@ -98,6 +100,7 @@ export const updateProfile = createAsyncThunk(
     }
 );
 
+// Auth slice with reducers and extra reducers
 const authSlice = createSlice({
     name: 'auth',
     initialState,
@@ -118,6 +121,7 @@ const authSlice = createSlice({
             state.organization = action.payload;
         },
     },
+    // Handle async thunk states
     extraReducers: (builder) => {
         builder
             .addCase(registerAdmin.pending, (state) => {

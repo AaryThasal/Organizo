@@ -21,6 +21,7 @@ import PendingRequestsPage from './pages/admin/PendingRequestsPage';
 import MyTasksPage from './pages/tasks/MyTasksPage';
 import SettingsPage from './pages/settings/SettingsPage';
 
+// Main app component with routes
 function AppContent() {
   const dispatch = useDispatch();
   const { isAuthenticated, isLoading, user } = useSelector((state) => state.auth);
@@ -37,6 +38,7 @@ function AppContent() {
     return <LoadingScreen message="Loading your account..." />;
   }
 
+  // Redirect authenticated users based on role/status
   const getAuthenticatedRedirect = () => {
     if (!user) return '/dashboard';
     if (user.role === 'admin') return '/dashboard';

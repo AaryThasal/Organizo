@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { LoadingScreen } from '../components/ui/Spinner';
 
+// Protects routes based on auth, role, and approval status
 function ProtectedRoute({ children, allowedRoles = [], requireApproved = true }) {
     const location = useLocation();
     const { isAuthenticated, user, isLoading } = useSelector((state) => state.auth);
@@ -27,6 +28,7 @@ function ProtectedRoute({ children, allowedRoles = [], requireApproved = true })
     const isPending = user.status === 'pending';
     const isApproved = user.status === 'approved';
 
+    // Check org and approval requirements
     if (requireApproved) {
         if (needsOrganization || isPending) {
             return <Navigate to="/join-organization" replace />;
@@ -38,6 +40,7 @@ function ProtectedRoute({ children, allowedRoles = [], requireApproved = true })
         }
     }
 
+    // Check role access
     if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
         return <Navigate to="/dashboard" replace />;
     }

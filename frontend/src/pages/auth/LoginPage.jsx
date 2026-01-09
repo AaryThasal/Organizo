@@ -5,6 +5,7 @@ import { login, clearError } from '../../store/authSlice';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 
+// Login page with email/password form
 function LoginPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ function LoginPage() {
         password: '',
     });
 
+    // Redirect after successful login based on user state
     useEffect(() => {
         if (isAuthenticated && user) {
             if (!user.organization_id && user.role !== 'admin') {
@@ -40,6 +42,7 @@ function LoginPage() {
         });
     };
 
+    // Submit login form
     const handleSubmit = async (e) => {
         e.preventDefault();
         dispatch(login(formData));

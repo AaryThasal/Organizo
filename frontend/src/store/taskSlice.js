@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../services/api';
 
+// Initial state for tasks
 const initialState = {
     tasks: [],
     myTasks: [],
@@ -9,6 +10,7 @@ const initialState = {
     error: null,
 };
 
+// Async thunks for task API calls
 export const fetchProjectTasks = createAsyncThunk(
     'tasks/fetchProjectTasks',
     async ({ projectId, filters = {} }, { rejectWithValue }) => {

@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 
+// Refresh data on window focus with throttling
 export function useRefreshOnFocus(onRefresh, options = {}) {
     const { enabled = true, throttleMs = 5000 } = options;
     const lastRefreshRef = useRef(0);
@@ -35,6 +36,7 @@ export function useRefreshOnFocus(onRefresh, options = {}) {
     }, [enabled, throttledRefresh]);
 }
 
+// Poll data at interval (only when page is visible)
 export function usePolling(onPoll, intervalMs, options = {}) {
     const { enabled = true } = options;
 

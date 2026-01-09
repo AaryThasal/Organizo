@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+// UI state for sidebar, modal, and toast
 const initialState = {
     sidebarOpen: true,
     activeModal: null,
@@ -10,6 +11,7 @@ const initialState = {
 const uiSlice = createSlice({
     name: 'ui',
     initialState,
+    // UI action reducers
     reducers: {
         toggleSidebar: (state) => {
             state.sidebarOpen = !state.sidebarOpen;

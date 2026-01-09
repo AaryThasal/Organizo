@@ -6,6 +6,7 @@ import { fetchNotifications, markAsRead, markAllAsRead } from '../../store/notif
 import { logout } from '../../store/authSlice';
 import Avatar from '../ui/Avatar';
 
+// Top navigation bar with notifications and user menu
 function Navbar() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -38,11 +39,13 @@ function Navbar() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Handle logout and redirect to login
     const handleLogout = () => {
         dispatch(logout());
         navigate('/login');
     };
 
+    // Mark notification as read and navigate
     const handleNotificationClick = (notification) => {
         if (!notification.is_read) {
             dispatch(markAsRead(notification.id));

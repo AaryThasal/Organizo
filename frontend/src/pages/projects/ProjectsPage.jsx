@@ -11,6 +11,7 @@ import Select from '../../components/ui/Select';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 
+// Projects list with create, filter, and delete
 function ProjectsPage() {
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
@@ -32,6 +33,7 @@ function ProjectsPage() {
         dispatch(fetchProjects());
     }, [dispatch]);
 
+    // Create new project
     const handleCreateProject = async (e) => {
         e.preventDefault();
         setCreating(true);
@@ -49,6 +51,7 @@ function ProjectsPage() {
         setCreating(false);
     };
 
+    // Delete project with confirmation
     const handleDeleteProject = async (projectId, projectName) => {
         if (window.confirm(`Are you sure you want to delete "${projectName}"? This will also delete all tasks.`)) {
             const result = await dispatch(deleteProject(projectId));
@@ -58,6 +61,7 @@ function ProjectsPage() {
         }
     };
 
+    // Filter projects by status
     const filteredProjects = filter === 'all'
         ? projects
         : projects.filter(p => p.status === filter);

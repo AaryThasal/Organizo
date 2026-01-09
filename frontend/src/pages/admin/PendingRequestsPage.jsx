@@ -9,12 +9,14 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 
+// Admin-only page for approving/rejecting join requests
 function PendingRequestsPage() {
     const dispatch = useDispatch();
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState(null);
 
+    // Fetch pending users
     const fetchPendingRequests = useCallback(async () => {
         try {
             const res = await api.get('/users/pending');
@@ -32,6 +34,7 @@ function PendingRequestsPage() {
 
     useRefreshOnFocus(fetchPendingRequests);
 
+    // Approve user join request
     const handleApprove = async (userId, userName) => {
         setProcessingId(userId);
         try {
@@ -45,6 +48,7 @@ function PendingRequestsPage() {
         }
     };
 
+    // Reject user join request with confirmation
     const handleReject = async (userId, userName) => {
         if (!window.confirm(`Are you sure you want to reject ${userName}'s request?`)) return;
 

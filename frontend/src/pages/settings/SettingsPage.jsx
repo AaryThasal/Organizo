@@ -8,6 +8,7 @@ import Input from '../../components/ui/Input';
 import Avatar from '../../components/ui/Avatar';
 import Spinner from '../../components/ui/Spinner';
 
+// Settings page for profile, password, and org settings
 function SettingsPage() {
     const dispatch = useDispatch();
     const { user, isLoading } = useSelector((state) => state.auth);
@@ -52,6 +53,7 @@ function SettingsPage() {
         }
     }, [user]);
 
+    // Fetch org name and join code (admin only)
     const fetchOrgData = async () => {
         try {
             const [orgRes, codeRes] = await Promise.all([
