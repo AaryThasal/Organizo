@@ -19,10 +19,6 @@ const { requireOrganization, requireApproved } = require('./middlewares/roleMidd
 // Create Express app
 const app = express();
 
-// ===========================================
-// Middleware Setup
-// ===========================================
-
 // Enable CORS for frontend
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
