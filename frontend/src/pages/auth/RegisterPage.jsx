@@ -126,7 +126,7 @@ function RegisterPage() {
                                 name="organizationName"
                                 value={formData.organizationName}
                                 onChange={handleChange}
-                                placeholder="Acme Corporation"
+                                placeholder="Your organization name"
                                 required
                             />
                         )}
@@ -138,7 +138,7 @@ function RegisterPage() {
                                 name="firstName"
                                 value={formData.firstName}
                                 onChange={handleChange}
-                                placeholder="John"
+                                placeholder="Enter your first name"
                                 required
                             />
                             <Input
@@ -147,7 +147,7 @@ function RegisterPage() {
                                 name="lastName"
                                 value={formData.lastName}
                                 onChange={handleChange}
-                                placeholder="Doe"
+                                placeholder="Enter your last name"
                                 required
                             />
                         </div>
