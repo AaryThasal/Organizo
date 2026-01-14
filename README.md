@@ -29,11 +29,6 @@ The system supports Admins, Managers, and Employees, each with clearly defined r
 - Update task status (To-Do, In Progress, Completed, On Hold)
 - View all assigned tasks in one place
 
-### 🔔 Real-Time Updates
-- Notification system for task assignments and status changes
-- Auto-refresh on page focus
-- Silent polling for approval status
-
 ---
 
 ## 🛠️ Tech Stack
@@ -61,7 +56,7 @@ The system supports Admins, Managers, and Employees, each with clearly defined r
 1. Register → Creates organization
 2. Share join code with team
 3. Approve/reject join requests
-4. Manage projects and assign managers
+4. Manage projects and has whole organization control
 
 ### Manager Flow
 1. Register → Enter join code
