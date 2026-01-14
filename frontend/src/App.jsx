@@ -26,13 +26,13 @@ function AppContent() {
   const dispatch = useDispatch();
   const { isAuthenticated, isLoading, user } = useSelector((state) => state.auth);
 
-  // Restore auth state on page load
+  // Restore auth state on page load - always fetch fresh user data including organization
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (token && !user) {
+    if (token) {
       dispatch(getCurrentUser());
     }
-  }, [dispatch, user]);
+  }, [dispatch]);
 
   if (isLoading && localStorage.getItem('token')) {
     return <LoadingScreen message="Loading your account..." />;
