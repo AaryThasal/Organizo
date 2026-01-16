@@ -4,6 +4,10 @@ Organizo is an organization-based project management application that helps team
 
 The system supports Admins, Managers, and Employees, each with clearly defined responsibilities and access levels.
 
+## 🌍 Live Application
+
+- **Website:** https://organizo-nu.vercel.app/login
+
 ## ✨ Features
 
 ### 👥 Role-Based Access Control
