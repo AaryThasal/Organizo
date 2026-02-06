@@ -37,7 +37,7 @@ const sizeClasses = {
 };
 
 function getAvatarColor(name) {
-    if (!name) return 'bg-secondary-500';
+    if (!name) return 'bg-primary-500';
     const firstLetter = name.charAt(0).toUpperCase();
     return avatarColors[firstLetter] || 'bg-primary-500';
 }

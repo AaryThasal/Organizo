@@ -17,9 +17,9 @@ function Spinner({ size = 'md', className = '' }) {
 
 function LoadingScreen({ message = 'Loading...' }) {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-secondary-50">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-dark">
             <Spinner size="xl" />
-            <p className="mt-4 text-secondary-600 font-medium">{message}</p>
+            <p className="mt-4 text-text-secondary font-medium">{message}</p>
         </div>
     );
 }

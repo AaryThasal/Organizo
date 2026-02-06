@@ -80,26 +80,26 @@ function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-dark flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
-                        <span className="text-3xl font-bold text-white">Organizo</span>
+                    <div className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-primary-500/10 border border-primary-500/20 mb-4">
+                        <span className="text-3xl font-bold text-gradient">Organizo</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-white">Create Account</h1>
-                    <p className="text-primary-200 mt-2">Get started with Organizo</p>
+                    <h1 className="text-3xl font-bold text-text-primary">Create Account</h1>
+                    <p className="text-text-secondary mt-2">Get started with Organizo</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-medium p-8">
+                <div className="bg-dark-card rounded-2xl shadow-medium border border-dark-border p-8">
                     <form onSubmit={handleSubmit}>
                         {(error || validationError) && (
-                            <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                            <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">
                                 {error || validationError}
                             </div>
                         )}
 
                         <div className="mb-6">
-                            <label className="block text-sm font-medium text-secondary-700 mb-3">
+                            <label className="block text-sm font-medium text-text-primary mb-3">
                                 I want to register as
                             </label>
                             <div className="grid grid-cols-3 gap-3">
@@ -109,8 +109,8 @@ function RegisterPage() {
                                         type="button"
                                         onClick={() => setFormData({ ...formData, role })}
                                         className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${formData.role === role
-                                            ? 'border-primary-500 bg-primary-50 text-primary-700'
-                                            : 'border-secondary-200 text-secondary-600 hover:border-secondary-300'
+                                            ? 'border-primary-500 bg-primary-500/10 text-primary-400'
+                                            : 'border-dark-border text-text-secondary hover:border-text-muted'
                                             }`}
                                     >
                                         {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -191,16 +191,16 @@ function RegisterPage() {
                         </Button>
 
                         {formData.role !== 'admin' && (
-                            <p className="mt-3 text-xs text-secondary-500 text-center">
+                            <p className="mt-3 text-xs text-text-secondary text-center">
                                 After registration, you'll need to join an organization using a code from your admin.
                             </p>
                         )}
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-secondary-600">
+                        <p className="text-text-secondary">
                             Already have an account?{' '}
-                            <Link to="/login" className="text-primary-600 font-medium hover:text-primary-700">
+                            <Link to="/login" className="text-primary-400 font-medium hover:text-primary-300">
                                 Sign in
                             </Link>
                         </p>

@@ -63,39 +63,39 @@ function JoinOrganizationPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-dark flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
-                        <span className="text-3xl font-bold text-white">O</span>
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-500/10 border border-primary-500/20 mb-4">
+                        <span className="text-3xl font-bold text-gradient">O</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-white">
+                    <h1 className="text-3xl font-bold text-text-primary">
                         {submitted ? 'Awaiting Approval' : 'Join Organization'}
                     </h1>
-                    <p className="text-primary-200 mt-2">
+                    <p className="text-text-secondary mt-2">
                         {submitted
                             ? 'Your request has been submitted'
                             : 'Enter the code provided by your admin'}
                     </p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-medium p-8">
+                <div className="bg-dark-card rounded-2xl shadow-medium border border-dark-border p-8">
                     {submitted ? (
                         <div className="text-center">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-amber-100 flex items-center justify-center">
-                                <svg className="w-10 h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-warning/10 border border-warning/20 flex items-center justify-center">
+                                <svg className="w-10 h-10 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
 
-                            <h2 className="text-xl font-semibold text-secondary-900 mb-2">
+                            <h2 className="text-xl font-semibold text-text-primary mb-2">
                                 Waiting for Admin Approval
                             </h2>
-                            <p className="text-secondary-600 mb-6">
+                            <p className="text-text-secondary mb-6">
                                 Your request to join the organization has been submitted. Please wait for the admin to approve your request.
                             </p>
 
-                            <div className="p-4 rounded-xl bg-secondary-50 text-secondary-600 text-sm">
+                            <div className="p-4 rounded-xl bg-dark-elevated text-text-secondary text-sm">
                                 <p className="flex items-center justify-center gap-2">
                                     <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -108,7 +108,7 @@ function JoinOrganizationPage() {
                     ) : (
                         <form onSubmit={handleSubmit}>
                             {error && (
-                                <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                                <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">
                                     {error}
                                 </div>
                             )}
@@ -124,7 +124,7 @@ function JoinOrganizationPage() {
                                 className="text-center"
                             />
 
-                            <p className="mb-4 text-sm text-secondary-500 text-center">
+                            <p className="mb-4 text-sm text-text-secondary text-center">
                                 Ask your organization admin for the join code
                             </p>
 

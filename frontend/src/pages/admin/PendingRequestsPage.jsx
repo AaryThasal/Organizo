@@ -101,13 +101,13 @@ function PendingRequestsPage() {
                                         size="lg"
                                     />
                                     <div>
-                                        <h3 className="font-semibold text-secondary-900">
+                                        <h3 className="font-semibold text-text-primary">
                                             {request.first_name} {request.last_name}
                                         </h3>
-                                        <p className="text-sm text-secondary-500">{request.email}</p>
+                                        <p className="text-sm text-text-secondary">{request.email}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <StatusBadge status={request.role} type="role" />
-                                            <span className="text-xs text-secondary-400">
+                                            <span className="text-xs text-text-muted">
                                                 Requested {new Date(request.created_at).toLocaleDateString()}
                                             </span>
                                         </div>

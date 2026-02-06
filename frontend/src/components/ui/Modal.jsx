@@ -31,7 +31,7 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
 
     const modalContent = (
         <div
-            className="fixed inset-0 bg-secondary-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-dark/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={(e) => {
                 if (e.target === e.currentTarget) {
                     onClose();
@@ -39,14 +39,14 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
             }}
         >
             <div
-                className={`bg-white rounded-2xl shadow-medium w-full ${sizeClasses[size] || sizeClasses.md} max-h-[90vh] overflow-hidden animate-scale-in`}
+                className={`bg-dark-card rounded-2xl shadow-medium border border-dark-border w-full ${sizeClasses[size] || sizeClasses.md} max-h-[90vh] overflow-hidden animate-scale-in`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-100">
-                    <h2 className="text-lg font-semibold text-secondary-900">{title}</h2>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-dark-border">
+                    <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-lg text-secondary-400 hover:text-secondary-600 hover:bg-secondary-100 transition-colors"
+                        className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-dark-elevated transition-colors"
                         aria-label="Close modal"
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

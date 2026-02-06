@@ -8,7 +8,7 @@ function DashboardLayout() {
     const { sidebarOpen } = useSelector((state) => state.ui);
 
     return (
-        <div className="min-h-screen bg-secondary-50">
+        <div className="min-h-screen bg-dark">
             <Sidebar />
             <Navbar />
 

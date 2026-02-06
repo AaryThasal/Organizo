@@ -35,9 +35,9 @@ function Input({
     return (
         <div className={`mb-4 ${className}`}>
             {label && (
-                <label htmlFor={inputId} className="block text-sm font-medium text-secondary-700 mb-1.5">
+                <label htmlFor={inputId} className="block text-sm font-medium text-text-primary mb-1.5">
                     {label}
-                    {required && <span className="text-red-500 ml-1">*</span>}
+                    {required && <span className="text-danger ml-1">*</span>}
                 </label>
             )}
             <div className="relative">
@@ -50,17 +50,17 @@ function Input({
                     placeholder={placeholder}
                     disabled={disabled}
                     required={required}
-                    className={`w-full px-4 py-2.5 rounded-xl border bg-white text-secondary-900 placeholder:text-secondary-400 transition-all duration-200 focus:ring-2 focus:ring-offset-0 ${error
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-secondary-200 focus:border-primary-500 focus:ring-primary-500/20'
-                        } ${disabled ? 'bg-secondary-50 cursor-not-allowed' : ''} ${isPasswordType ? 'pr-12' : ''}`}
+                    className={`w-full px-4 py-2.5 rounded-xl border bg-dark-card text-text-primary placeholder:text-text-muted transition-all duration-200 focus:ring-2 focus:ring-offset-0 ${error
+                        ? 'border-danger focus:border-danger focus:ring-danger/20'
+                        : 'border-dark-border focus:border-primary-500 focus:ring-primary-500/20'
+                        } ${disabled ? 'bg-dark-elevated cursor-not-allowed opacity-60' : ''} ${isPasswordType ? 'pr-12' : ''}`}
                     {...props}
                 />
                 {isPasswordType && (
                     <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 transition-colors focus:outline-none"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors focus:outline-none"
                         tabIndex={-1}
                     >
                         {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
@@ -68,7 +68,7 @@ function Input({
                 )}
             </div>
             {error && (
-                <p className="mt-1.5 text-sm text-red-600">{error}</p>
+                <p className="mt-1.5 text-sm text-danger">{error}</p>
             )}
         </div>
     );

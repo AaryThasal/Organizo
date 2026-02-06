@@ -26,17 +26,17 @@ const icons = {
 };
 
 const colorClasses = {
-    success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-    error: 'bg-red-50 border-red-200 text-red-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
-    warning: 'bg-amber-50 border-amber-200 text-amber-800',
+    success: 'bg-dark-card border-success/30 text-success',
+    error: 'bg-dark-card border-danger/30 text-danger',
+    info: 'bg-dark-card border-info/30 text-info',
+    warning: 'bg-dark-card border-warning/30 text-warning',
 };
 
 const iconColorClasses = {
-    success: 'text-emerald-500',
-    error: 'text-red-500',
-    info: 'text-blue-500',
-    warning: 'text-amber-500',
+    success: 'text-success',
+    error: 'text-danger',
+    info: 'text-info',
+    warning: 'text-warning',
 };
 
 function Toast() {
@@ -68,7 +68,7 @@ function Toast() {
                 <p className="text-sm font-medium">{message}</p>
                 <button
                     onClick={() => dispatch(hideToast())}
-                    className="ml-2 p-1 rounded-lg hover:bg-black/5 transition-colors"
+                    className="ml-2 p-1 rounded-lg hover:bg-dark-elevated transition-colors"
                 >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

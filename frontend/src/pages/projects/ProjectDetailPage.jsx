@@ -160,17 +160,17 @@ function ProjectDetailPage() {
                         <div className="flex items-center gap-3 mb-2">
                             <button
                                 onClick={() => navigate('/projects')}
-                                className="p-2 rounded-lg text-secondary-400 hover:bg-secondary-100 hover:text-secondary-600 transition-colors"
+                                className="p-2 rounded-lg text-text-secondary hover:bg-dark-elevated hover:text-text-primary transition-colors"
                             >
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
                             </button>
-                            <h1 className="text-2xl font-bold text-secondary-900">{currentProject.name}</h1>
+                            <h1 className="text-2xl font-bold text-text-primary">{currentProject.name}</h1>
                             <StatusBadge status={currentProject.status} type="project" />
                         </div>
                         {currentProject.description && (
-                            <p className="text-secondary-600 ml-11">{currentProject.description}</p>
+                            <p className="text-text-secondary ml-11">{currentProject.description}</p>
                         )}
                     </div>
 
@@ -199,26 +199,26 @@ function ProjectDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-1">
                     <div className="card">
-                        <h2 className="text-lg font-semibold text-secondary-900 mb-4">Team Members</h2>
+                        <h2 className="text-lg font-semibold text-text-primary mb-4">Team Members</h2>
                         <div className="space-y-3">
                             {projectMembers.map((member) => (
                                 <div
                                     key={member.id}
-                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-secondary-50"
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-dark-elevated"
                                 >
                                     <div className="flex items-center gap-3">
                                         <Avatar firstName={member.first_name} lastName={member.last_name} size="sm" />
                                         <div>
-                                            <p className="text-sm font-medium text-secondary-900">
+                                            <p className="text-sm font-medium text-text-primary">
                                                 {member.first_name} {member.last_name}
                                             </p>
-                                            <p className="text-xs text-secondary-500">{member.role}</p>
+                                            <p className="text-xs text-text-muted">{member.role}</p>
                                         </div>
                                     </div>
                                     {canManage && member.id !== user.id && (
                                         <button
                                             onClick={() => handleRemoveMember(member.id, `${member.first_name} ${member.last_name}`)}
-                                            className="p-1.5 rounded-lg text-secondary-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                            className="p-1.5 rounded-lg text-text-muted hover:bg-danger/10 hover:text-danger transition-colors"
                                         >
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -228,7 +228,7 @@ function ProjectDetailPage() {
                                 </div>
                             ))}
                             {projectMembers.length === 0 && (
-                                <p className="text-sm text-secondary-500 text-center py-4">No team members</p>
+                                <p className="text-sm text-text-secondary text-center py-4">No team members</p>
                             )}
                         </div>
                     </div>
@@ -236,13 +236,13 @@ function ProjectDetailPage() {
 
                 <div className="lg:col-span-3">
                     <div className="card">
-                        <h2 className="text-lg font-semibold text-secondary-900 mb-6">Tasks</h2>
+                        <h2 className="text-lg font-semibold text-text-primary mb-6">Tasks</h2>
 
-                        <div className="flex flex-wrap gap-3 mb-6 pb-4 border-b border-secondary-100">
+                        <div className="flex flex-wrap gap-3 mb-6 pb-4 border-b border-dark-border">
                             {Object.entries(tasksByStatus).map(([status, statusTasks]) => (
                                 <div key={status} className="flex items-center gap-2">
                                     <StatusBadge status={status} type="task" />
-                                    <span className="text-sm font-medium text-secondary-600">
+                                    <span className="text-sm font-medium text-text-secondary">
                                         {statusTasks.length}
                                     </span>
                                 </div>
@@ -255,7 +255,7 @@ function ProjectDetailPage() {
                                     <div key={status}>
                                         <div className="flex items-center gap-2 mb-3">
                                             <StatusBadge status={status} type="task" />
-                                            <span className="text-xs text-secondary-400">
+                                            <span className="text-xs text-text-muted">
                                                 ({statusTasks.length} {statusTasks.length === 1 ? 'task' : 'tasks'})
                                             </span>
                                         </div>
@@ -264,21 +264,21 @@ function ProjectDetailPage() {
                                             {statusTasks.map((task) => (
                                                 <div
                                                     key={task.id}
-                                                    className="flex items-center gap-4 p-4 bg-secondary-50 rounded-xl hover:bg-secondary-100 transition-colors group"
+                                                    className="flex items-center gap-4 p-4 bg-dark-elevated rounded-xl hover:bg-dark-border transition-colors group"
                                                 >
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm font-medium text-secondary-900 truncate">
+                                                        <h4 className="text-sm font-medium text-text-primary truncate">
                                                             {task.title}
                                                         </h4>
                                                         {task.description && (
-                                                            <p className="text-xs text-secondary-500 truncate mt-0.5">
+                                                            <p className="text-xs text-text-secondary truncate mt-0.5">
                                                                 {task.description}
                                                             </p>
                                                         )}
                                                     </div>
 
                                                     {task.due_date && (
-                                                        <div className="hidden sm:flex items-center gap-1.5 text-xs text-secondary-500 shrink-0">
+                                                        <div className="hidden sm:flex items-center gap-1.5 text-xs text-text-secondary shrink-0">
                                                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                             </svg>
@@ -295,17 +295,17 @@ function ProjectDetailPage() {
                                                                         firstName={assignee.first_name}
                                                                         lastName={assignee.last_name}
                                                                         size="sm"
-                                                                        className="ring-2 ring-white"
+                                                                        className="ring-2 ring-dark-card"
                                                                     />
                                                                 ))}
                                                                 {task.assignees.length > 3 && (
-                                                                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-secondary-200 text-xs font-medium text-secondary-600 ring-2 ring-white">
+                                                                    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-dark-border text-xs font-medium text-text-secondary ring-2 ring-dark-card">
                                                                         +{task.assignees.length - 3}
                                                                     </span>
                                                                 )}
                                                             </div>
                                                         ) : (
-                                                            <span className="text-xs text-secondary-400">Unassigned</span>
+                                                            <span className="text-xs text-text-muted">Unassigned</span>
                                                         )}
                                                     </div>
 
@@ -313,7 +313,7 @@ function ProjectDetailPage() {
                                                         <select
                                                             value={task.status}
                                                             onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                                                            className="text-xs border border-secondary-200 bg-white rounded-lg py-1.5 px-2 pr-6 focus:ring-1 focus:ring-primary-500 cursor-pointer shrink-0"
+                                                            className="text-xs border border-dark-border bg-dark-card text-text-primary rounded-lg py-1.5 px-2 pr-6 focus:ring-1 focus:ring-primary-500 cursor-pointer shrink-0"
                                                         >
                                                             <option value="to-do">To Do</option>
                                                             <option value="in-progress">In Progress</option>
@@ -325,7 +325,7 @@ function ProjectDetailPage() {
                                                     {canManage && (
                                                         <button
                                                             onClick={() => handleDeleteTask(task.id, task.title)}
-                                                            className="p-2 rounded-lg text-secondary-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition-all shrink-0"
+                                                            className="p-2 rounded-lg text-text-muted opacity-0 group-hover:opacity-100 hover:bg-danger/10 hover:text-danger transition-all shrink-0"
                                                         >
                                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -341,12 +341,12 @@ function ProjectDetailPage() {
 
                             {tasks.length === 0 && (
                                 <div className="text-center py-8">
-                                    <svg className="w-12 h-12 mx-auto text-secondary-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg className="w-12 h-12 mx-auto text-text-muted mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
-                                    <p className="text-sm text-secondary-500">No tasks yet</p>
+                                    <p className="text-sm text-text-secondary">No tasks yet</p>
                                     {canManage && (
-                                        <p className="text-xs text-secondary-400 mt-1">Click "Add Task" to create your first task</p>
+                                        <p className="text-xs text-text-muted mt-1">Click "Add Task" to create your first task</p>
                                     )}
                                 </div>
                             )}
@@ -364,20 +364,20 @@ function ProjectDetailPage() {
                 title="Add Team Members"
                 size="sm"
             >
-                <p className="text-sm text-secondary-600 mb-3">
+                <p className="text-sm text-text-secondary mb-3">
                     Select one or more employees to add to this project:
                 </p>
 
-                <div className="border border-secondary-200 rounded-xl p-3 max-h-64 overflow-y-auto">
+                <div className="border border-dark-border rounded-xl p-3 max-h-64 overflow-y-auto">
                     {availableUsers.length === 0 ? (
-                        <p className="text-sm text-secondary-500 text-center py-4">
+                        <p className="text-sm text-text-secondary text-center py-4">
                             All approved users are already members of this project.
                         </p>
                     ) : (
                         availableUsers.map((u) => (
                             <label
                                 key={u.id}
-                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary-50 cursor-pointer"
+                                className="flex items-center gap-3 p-2 rounded-lg hover:bg-dark-border cursor-pointer"
                             >
                                 <input
                                     type="checkbox"
@@ -389,14 +389,14 @@ function ProjectDetailPage() {
                                             setSelectedUserIds(selectedUserIds.filter(id => id !== u.id));
                                         }
                                     }}
-                                    className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
+                                    className="w-4 h-4 rounded border-dark-border bg-dark-elevated text-primary-500 focus:ring-primary-500"
                                 />
                                 <Avatar firstName={u.first_name} lastName={u.last_name} size="sm" />
                                 <div className="flex-1">
-                                    <span className="text-sm text-secondary-700 font-medium">
+                                    <span className="text-sm text-text-primary font-medium">
                                         {u.first_name} {u.last_name}
                                     </span>
-                                    <span className="text-xs text-secondary-400 ml-2">
+                                    <span className="text-xs text-text-muted ml-2">
                                         {u.role}
                                     </span>
                                 </div>
@@ -449,30 +449,30 @@ function ProjectDetailPage() {
                     />
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-secondary-700 mb-1.5">Description</label>
+                        <label className="block text-sm font-medium text-text-primary mb-1.5">Description</label>
                         <textarea
                             value={taskForm.description}
                             onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
                             placeholder="Enter task description"
                             rows={3}
-                            className="w-full px-4 py-2.5 rounded-xl border border-secondary-200 bg-white text-secondary-900 placeholder:text-secondary-400 transition-all duration-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 resize-none"
+                            className="w-full px-4 py-2.5 rounded-xl border border-dark-border bg-dark-elevated text-text-primary placeholder:text-text-muted transition-all duration-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 resize-none"
                         />
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-secondary-700 mb-1.5">
+                        <label className="block text-sm font-medium text-text-primary mb-1.5">
                             Assign To (select multiple)
                         </label>
-                        <div className="border border-secondary-200 rounded-xl p-3 max-h-48 overflow-y-auto">
+                        <div className="border border-dark-border rounded-xl p-3 max-h-48 overflow-y-auto">
                             {projectMembers.length === 0 ? (
-                                <p className="text-sm text-secondary-400 text-center py-2">
+                                <p className="text-sm text-text-muted text-center py-2">
                                     No team members available
                                 </p>
                             ) : (
                                 projectMembers.map((member) => (
                                     <label
                                         key={member.id}
-                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary-50 cursor-pointer"
+                                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-dark-border cursor-pointer"
                                     >
                                         <input
                                             type="checkbox"
@@ -490,13 +490,13 @@ function ProjectDetailPage() {
                                                     });
                                                 }
                                             }}
-                                            className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
+                                            className="w-4 h-4 rounded border-dark-border bg-dark-elevated text-primary-500 focus:ring-primary-500"
                                         />
                                         <Avatar firstName={member.first_name} lastName={member.last_name} size="sm" />
-                                        <span className="text-sm text-secondary-700">
+                                        <span className="text-sm text-text-primary">
                                             {member.first_name} {member.last_name}
                                         </span>
-                                        <span className="text-xs text-secondary-400 ml-auto">
+                                        <span className="text-xs text-text-muted ml-auto">
                                             {member.role}
                                         </span>
                                     </label>
@@ -504,7 +504,7 @@ function ProjectDetailPage() {
                             )}
                         </div>
                         {taskForm.assignees.length > 0 && (
-                            <p className="text-xs text-secondary-500 mt-1">
+                            <p className="text-xs text-text-secondary mt-1">
                                 {taskForm.assignees.length} member(s) selected
                             </p>
                         )}

@@ -3,64 +3,64 @@ import React from 'react';
 const taskStatusConfig = {
     'to-do': {
         label: 'To Do',
-        className: 'bg-secondary-100 text-secondary-700',
+        className: 'bg-dark-elevated text-text-secondary',
     },
     'in-progress': {
         label: 'In Progress',
-        className: 'bg-blue-100 text-blue-700',
+        className: 'bg-info/20 text-blue-400',
     },
     'completed': {
         label: 'Completed',
-        className: 'bg-emerald-100 text-emerald-700',
+        className: 'bg-success/20 text-green-400',
     },
     'on-hold': {
         label: 'On Hold',
-        className: 'bg-amber-100 text-amber-700',
+        className: 'bg-warning/20 text-amber-400',
     },
 };
 
 const projectStatusConfig = {
     'active': {
         label: 'Active',
-        className: 'bg-emerald-100 text-emerald-700',
+        className: 'bg-success/20 text-green-400',
     },
     'completed': {
         label: 'Completed',
-        className: 'bg-blue-100 text-blue-700',
+        className: 'bg-info/20 text-blue-400',
     },
     'on-hold': {
         label: 'On Hold',
-        className: 'bg-amber-100 text-amber-700',
+        className: 'bg-warning/20 text-amber-400',
     },
 };
 
 const userStatusConfig = {
     'pending': {
         label: 'Pending',
-        className: 'bg-amber-100 text-amber-700',
+        className: 'bg-warning/20 text-amber-400',
     },
     'approved': {
         label: 'Approved',
-        className: 'bg-emerald-100 text-emerald-700',
+        className: 'bg-success/20 text-green-400',
     },
     'rejected': {
         label: 'Rejected',
-        className: 'bg-red-100 text-red-700',
+        className: 'bg-danger/20 text-red-400',
     },
 };
 
 const roleConfig = {
     'admin': {
         label: 'Admin',
-        className: 'bg-purple-100 text-purple-700',
+        className: 'bg-primary-500/20 text-primary-400',
     },
     'manager': {
         label: 'Manager',
-        className: 'bg-blue-100 text-blue-700',
+        className: 'bg-info/20 text-blue-400',
     },
     'employee': {
         label: 'Employee',
-        className: 'bg-secondary-100 text-secondary-700',
+        className: 'bg-dark-elevated text-text-secondary',
     },
 };
 
@@ -84,7 +84,7 @@ function StatusBadge({ status, type = 'task', className = '' }) {
     if (!config) {
         config = {
             label: status,
-            className: 'bg-secondary-100 text-secondary-700',
+            className: 'bg-dark-elevated text-text-secondary',
         };
     }
 

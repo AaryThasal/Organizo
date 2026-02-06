@@ -6,35 +6,48 @@ export default {
     ],
     theme: {
         extend: {
-            // Custom color palette - Easy to modify
+            // Dark SaaS Color Palette
             colors: {
-                // Primary brand color (Indigo)
+                // Dark theme backgrounds
+                dark: {
+                    DEFAULT: '#0F172A',      // Main page background
+                    card: '#1E293B',         // Card/panel background
+                    elevated: '#273549',     // Slightly elevated surfaces
+                    border: '#334155',       // Borders/dividers
+                },
+                // Primary accent color (Violet)
                 primary: {
+                    50: '#f5f3ff',
+                    100: '#ede9fe',
+                    200: '#ddd6fe',
+                    300: '#c4b5fd',
+                    400: '#a78bfa',
+                    500: '#8B5CF6',           // Main primary accent
+                    600: '#7c3aed',
+                    700: '#6d28d9',
+                    800: '#5b21b6',
+                    900: '#4c1d95',
+                    950: '#2e1065',
+                },
+                // Secondary accent (Indigo for hover/highlights)
+                secondary: {
                     50: '#eef2ff',
                     100: '#e0e7ff',
                     200: '#c7d2fe',
                     300: '#a5b4fc',
                     400: '#818cf8',
-                    500: '#6366f1',
+                    500: '#6366F1',           // Secondary accent
                     600: '#4f46e5',
                     700: '#4338ca',
                     800: '#3730a3',
                     900: '#312e81',
                     950: '#1e1b4b',
                 },
-                // Secondary color (Slate for neutrals)
-                secondary: {
-                    50: '#f8fafc',
-                    100: '#f1f5f9',
-                    200: '#e2e8f0',
-                    300: '#cbd5e1',
-                    400: '#94a3b8',
-                    500: '#64748b',
-                    600: '#475569',
-                    700: '#334155',
-                    800: '#1e293b',
-                    900: '#0f172a',
-                    950: '#020617',
+                // Text colors
+                text: {
+                    primary: '#E2E8F0',       // Primary text
+                    secondary: '#94A3B8',     // Muted/secondary text
+                    muted: '#64748B',         // Even more muted
                 },
                 // Accent color (Emerald for success/positive)
                 accent: {
@@ -50,20 +63,22 @@ export default {
                     900: '#064e3b',
                 },
                 // Status colors
-                success: '#10b981',
+                success: '#22C55E',
                 warning: '#f59e0b',
-                danger: '#ef4444',
+                danger: '#EF4444',
                 info: '#3b82f6',
             },
             // Custom font family
             fontFamily: {
                 sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
             },
-            // Custom shadows
+            // Custom shadows for dark theme
             boxShadow: {
-                'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-                'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 30px -5px rgba(0, 0, 0, 0.04)',
-                'glow': '0 0 20px rgba(99, 102, 241, 0.3)',
+                'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.3), 0 10px 20px -2px rgba(0, 0, 0, 0.2)',
+                'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 30px -5px rgba(0, 0, 0, 0.3)',
+                'glow': '0 0 20px rgba(139, 92, 246, 0.4)',
+                'glow-lg': '0 0 30px rgba(139, 92, 246, 0.5)',
+                'inner-glow': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
             },
             // Custom border radius
             borderRadius: {

@@ -130,17 +130,17 @@ function Sidebar() {
 
     return (
         <aside
-            className={`fixed left-0 top-0 h-full bg-white border-r border-secondary-200 transition-all duration-300 z-40 ${sidebarOpen ? 'w-64' : 'w-20'
+            className={`fixed left-0 top-0 h-full bg-dark-card border-r border-dark-border transition-all duration-300 z-40 ${sidebarOpen ? 'w-64' : 'w-20'
                 }`}
         >
             <div className="flex flex-col h-full">
-                <div className="h-16 flex items-center px-6 border-b border-secondary-100">
+                <div className="h-16 flex items-center px-6 border-b border-dark-border">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-glow">
                             <span className="text-white font-bold text-sm">O</span>
                         </div>
                         {sidebarOpen && (
-                            <span className="text-lg font-bold text-secondary-900">Organizo</span>
+                            <span className="text-lg font-bold text-text-primary">Organizo</span>
                         )}
                     </div>
                 </div>
@@ -153,8 +153,8 @@ function Sidebar() {
                                     to={item.path}
                                     className={({ isActive }) =>
                                         `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
-                                            ? 'bg-primary-50 text-primary-700 font-medium'
-                                            : 'text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900'
+                                            ? 'bg-primary-500/10 text-primary-400 font-medium shadow-inner-glow'
+                                            : 'text-text-secondary hover:bg-dark-elevated hover:text-text-primary'
                                         }`
                                     }
                                 >
@@ -166,10 +166,10 @@ function Sidebar() {
                     </ul>
                 </nav>
 
-                <div className="p-4 border-t border-secondary-100">
+                <div className="p-4 border-t border-dark-border">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-secondary-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+                        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-text-secondary hover:bg-danger/10 hover:text-danger transition-all duration-200"
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

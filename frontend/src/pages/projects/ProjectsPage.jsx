@@ -103,8 +103,8 @@ function ProjectsPage() {
                         key={f.value}
                         onClick={() => setFilter(f.value)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === f.value
-                            ? 'bg-primary-100 text-primary-700'
-                            : 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200'
+                            ? 'bg-primary-500/10 text-primary-400'
+                            : 'bg-dark-elevated text-text-secondary hover:bg-dark-border'
                             }`}
                     >
                         {f.label}
@@ -133,7 +133,7 @@ function ProjectsPage() {
                                 {canCreateProject && (
                                     <button
                                         onClick={() => handleDeleteProject(project.id, project.name)}
-                                        className="p-1.5 rounded-lg text-secondary-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition-all"
+                                        className="p-1.5 rounded-lg text-text-muted opacity-0 group-hover:opacity-100 hover:bg-danger/10 hover:text-danger transition-all"
                                     >
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -143,18 +143,18 @@ function ProjectsPage() {
                             </div>
 
                             <Link to={`/projects/${project.id}`}>
-                                <h3 className="text-lg font-semibold text-secondary-900 mb-2 hover:text-primary-600 transition-colors">
+                                <h3 className="text-lg font-semibold text-text-primary mb-2 hover:text-primary-400 transition-colors">
                                     {project.name}
                                 </h3>
                             </Link>
 
                             {project.description && (
-                                <p className="text-sm text-secondary-500 line-clamp-2 mb-4">
+                                <p className="text-sm text-text-secondary line-clamp-2 mb-4">
                                     {project.description}
                                 </p>
                             )}
 
-                            <div className="flex items-center justify-between text-sm text-secondary-500">
+                            <div className="flex items-center justify-between text-sm text-text-secondary">
                                 <div className="flex items-center gap-4">
                                     <span className="flex items-center gap-1">
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -196,7 +196,7 @@ function ProjectsPage() {
                     />
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-secondary-700 mb-1.5">
+                        <label className="block text-sm font-medium text-text-primary mb-1.5">
                             Description
                         </label>
                         <textarea
@@ -205,7 +205,7 @@ function ProjectsPage() {
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             placeholder="Enter project description"
                             rows={3}
-                            className="w-full px-4 py-2.5 rounded-xl border border-secondary-200 bg-white text-secondary-900 placeholder:text-secondary-400 transition-all duration-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 resize-none"
+                            className="w-full px-4 py-2.5 rounded-xl border border-dark-border bg-dark-card text-text-primary placeholder:text-text-muted transition-all duration-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 resize-none"
                         />
                     </div>
 

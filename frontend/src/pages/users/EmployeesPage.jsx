@@ -57,8 +57,8 @@ function EmployeesPage() {
                         key={f.value}
                         onClick={() => setFilter(f.value)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${filter === f.value
-                            ? 'bg-primary-100 text-primary-700'
-                            : 'bg-secondary-100 text-secondary-600 hover:bg-secondary-200'
+                            ? 'bg-primary-500/10 text-primary-400'
+                            : 'bg-dark-elevated text-text-secondary hover:bg-dark-border'
                             }`}
                     >
                         {f.label}
@@ -87,20 +87,20 @@ function EmployeesPage() {
                                     size="lg"
                                 />
                                 <div className="flex-1">
-                                    <h3 className="font-semibold text-secondary-900">
+                                    <h3 className="font-semibold text-text-primary">
                                         {employee.first_name} {employee.last_name}
                                     </h3>
-                                    <p className="text-sm text-secondary-500">{employee.email}</p>
+                                    <p className="text-sm text-text-secondary">{employee.email}</p>
                                     <div className="flex items-center gap-2 mt-2">
                                         <StatusBadge status={employee.role} type="role" />
                                         {employee.id === user?.id && (
-                                            <span className="text-xs text-secondary-400">(You)</span>
+                                            <span className="text-xs text-text-muted">(You)</span>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-secondary-100 text-xs text-secondary-500">
+                            <div className="mt-4 pt-4 border-t border-dark-border text-xs text-text-secondary">
                                 Joined {new Date(employee.created_at).toLocaleDateString()}
                             </div>
                         </div>

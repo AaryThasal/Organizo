@@ -49,20 +49,20 @@ function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-dark flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
-                        <span className="text-3xl font-bold text-white">Organizo</span>
+                    <div className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-primary-500/10 border border-primary-500/20 mb-4">
+                        <span className="text-3xl font-bold text-gradient">Organizo</span>
                     </div>
-                    <h1 className="text-3xl font-bold text-white">Welcome back</h1>
-                    <p className="text-primary-200 mt-2">Sign in to your account</p>
+                    <h1 className="text-3xl font-bold text-text-primary">Welcome back</h1>
+                    <p className="text-text-secondary mt-2">Sign in to your account</p>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-medium p-8">
+                <div className="bg-dark-card rounded-2xl shadow-medium border border-dark-border p-8">
                     <form onSubmit={handleSubmit}>
                         {error && (
-                            <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                            <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">
                                 {error}
                             </div>
                         )}
@@ -97,9 +97,9 @@ function LoginPage() {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-secondary-600">
+                        <p className="text-text-secondary">
                             Don't have an account?{' '}
-                            <Link to="/register" className="text-primary-600 font-medium hover:text-primary-700">
+                            <Link to="/register" className="text-primary-400 font-medium hover:text-primary-300">
                                 Sign up
                             </Link>
                         </p>

@@ -236,10 +236,10 @@ function SettingsPage() {
 
             {/* Profile Section */}
             <div className="card mb-6">
-                <h2 className="text-lg font-semibold text-secondary-900 mb-6">Profile Information</h2>
+                <h2 className="text-lg font-semibold text-text-primary mb-6">Profile Information</h2>
 
                 {/* Profile Image Section */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 p-4 bg-secondary-50 rounded-xl">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 p-4 bg-dark-elevated rounded-xl">
                     {/* Current/Preview Image */}
                     <div className="relative">
                         {imagePreview ? (
@@ -261,11 +261,11 @@ function SettingsPage() {
                     </div>
 
                     <div className="flex-1">
-                        <p className="font-medium text-secondary-900">
+                        <p className="font-medium text-text-primary">
                             {user?.first_name} {user?.last_name}
                         </p>
-                        <p className="text-sm text-secondary-500">{user?.email}</p>
-                        <p className="text-xs text-secondary-400 capitalize mt-1">{user?.role}</p>
+                        <p className="text-sm text-text-secondary">{user?.email}</p>
+                        <p className="text-xs text-text-muted capitalize mt-1">{user?.role}</p>
 
                         {/* Image Upload Controls */}
                         <div className="flex flex-wrap gap-2 mt-3">
@@ -320,7 +320,7 @@ function SettingsPage() {
                                 </>
                             )}
                         </div>
-                        <p className="text-xs text-secondary-400 mt-2">
+                        <p className="text-xs text-text-muted mt-2">
                             JPG, PNG or GIF. Max 5MB.
                         </p>
                     </div>
@@ -356,7 +356,7 @@ function SettingsPage() {
 
             {/* Password Section */}
             <div className="card mb-6">
-                <h2 className="text-lg font-semibold text-secondary-900 mb-6">Change Password</h2>
+                <h2 className="text-lg font-semibold text-text-primary mb-6">Change Password</h2>
 
                 <form onSubmit={handlePasswordSubmit}>
                     <Input
@@ -389,7 +389,7 @@ function SettingsPage() {
             {/* Organization Section (Admin Only) */}
             {user?.role === 'admin' && (
                 <div className="card">
-                    <h2 className="text-lg font-semibold text-secondary-900 mb-6">Organization Settings</h2>
+                    <h2 className="text-lg font-semibold text-text-primary mb-6">Organization Settings</h2>
 
                     <form onSubmit={handleOrgSubmit} className="mb-6">
                         <Input
@@ -403,19 +403,19 @@ function SettingsPage() {
                         </Button>
                     </form>
 
-                    <div className="border-t border-secondary-100 pt-6">
-                        <label className="block text-sm font-medium text-secondary-700 mb-2">
+                    <div className="border-t border-dark-border pt-6">
+                        <label className="block text-sm font-medium text-text-primary mb-2">
                             Organization Join Code
                         </label>
                         <div className="flex items-center gap-3">
-                            <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-secondary-100 rounded-xl">
-                                <code className="text-lg font-mono font-bold text-primary-600 tracking-widest">
+                            <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-dark-elevated rounded-xl">
+                                <code className="text-lg font-mono font-bold text-primary-400 tracking-widest">
                                     {orgData.joinCode || '------'}
                                 </code>
                                 <button
                                     type="button"
                                     onClick={copyJoinCode}
-                                    className="p-2 rounded-lg text-secondary-400 hover:bg-secondary-200 hover:text-secondary-600 transition-colors"
+                                    className="p-2 rounded-lg text-text-muted hover:bg-dark-border hover:text-text-primary transition-colors"
                                     title="Copy to clipboard"
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -432,7 +432,7 @@ function SettingsPage() {
                                 Regenerate
                             </Button>
                         </div>
-                        <p className="text-xs text-secondary-500 mt-2">
+                        <p className="text-xs text-text-secondary mt-2">
                             Share this code with team members to let them join your organization.
                         </p>
                     </div>
