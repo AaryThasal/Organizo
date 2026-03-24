@@ -126,7 +126,7 @@ function RegisterPage() {
                                 name="organizationName"
                                 value={formData.organizationName}
                                 onChange={handleChange}
-                                placeholder="Your organization name"
+                                placeholder="Your Organization Name"
                                 required
                             />
                         )}
@@ -158,7 +158,7 @@ function RegisterPage() {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder="you@example.com"
+                            placeholder="you@gmail.com"
                             required
                         />
 
