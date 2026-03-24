@@ -320,9 +320,7 @@ function SettingsPage() {
                                 </>
                             )}
                         </div>
-                        <p className="text-xs text-text-muted mt-2">
-                            JPG, PNG or GIF. Max 5MB.
-                        </p>
+    
                     </div>
                 </div>
 
