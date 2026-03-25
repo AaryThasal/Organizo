@@ -44,12 +44,13 @@ function NotificationsPage() {
         }
     };
 
-    const handleDelete = async (e, notificationId) => {
-        e.stopPropagation();
-        const result = await dispatch(deleteNotification(notificationId));
-        if (!result.error) {
-            dispatch(showToast({ type: 'success', message: 'Notification deleted' }));
+    const handleDeleteAll = async () => {
+        const toDelete = filteredNotifications;
+        if (toDelete.length === 0) return;
+        for (const n of toDelete) {
+            await dispatch(deleteNotification(n.id));
         }
+        dispatch(showToast({ type: 'success', message: `${toDelete.length} notification${toDelete.length > 1 ? 's' : ''} deleted` }));
     };
 
     const handleMarkAllRead = async () => {
@@ -92,33 +93,46 @@ function NotificationsPage() {
                 )}
             </div>
 
-            {/* Filter tabs */}
-            <div className="flex gap-1 mb-6 p-1 bg-dark-elevated rounded-xl w-fit">
-                {[
-                    { key: 'all', label: 'All', count: notifications.length },
-                    { key: 'unread', label: 'Unread', count: unreadCount },
-                ].map((tab) => (
-                    <button
-                        key={tab.key}
-                        onClick={() => setFilter(tab.key)}
-                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                            filter === tab.key
-                                ? 'bg-dark-card text-text-primary shadow-soft'
-                                : 'text-text-secondary hover:text-text-primary'
-                        }`}
-                    >
-                        {tab.label}
-                        {tab.count > 0 && (
-                            <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
+            {/* Filter tabs + Delete All */}
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex gap-1 p-1 bg-dark-elevated rounded-xl w-fit">
+                    {[
+                        { key: 'all', label: 'All', count: notifications.length },
+                        { key: 'unread', label: 'Unread', count: unreadCount },
+                    ].map((tab) => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setFilter(tab.key)}
+                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                                 filter === tab.key
-                                    ? 'bg-primary-500/20 text-primary-400'
-                                    : 'bg-dark-card text-text-muted'
-                            }`}>
-                                {tab.count}
-                            </span>
-                        )}
-                    </button>
-                ))}
+                                    ? 'bg-dark-card text-text-primary shadow-soft'
+                                    : 'text-text-secondary hover:text-text-primary'
+                            }`}
+                        >
+                            {tab.label}
+                            {tab.count > 0 && (
+                                <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
+                                    filter === tab.key
+                                        ? 'bg-primary-500/20 text-primary-400'
+                                        : 'bg-dark-card text-text-muted'
+                                }`}>
+                                    {tab.count}
+                                </span>
+                            )}
+                        </button>
+                    ))}
+                </div>
+
+                {filteredNotifications.length > 0 && (
+                    <div className="p-1 bg-dark-elevated rounded-xl w-fit">
+                        <button
+                            onClick={handleDeleteAll}
+                            className="px-4 py-2 text-sm font-medium rounded-lg text-text-secondary hover:text-text-primary transition-all duration-200"
+                        >
+                            Delete All
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Notification list */}
@@ -153,7 +167,7 @@ function NotificationsPage() {
                             >
                                 {/* Unread dot */}
                                 {!notification.is_read && (
-                                    <div className="absolute top-4 right-14 w-2.5 h-2.5 rounded-full bg-primary-500 shadow-glow" />
+                                    <div className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-primary-500 shadow-glow" />
                                 )}
 
                                 {/* Type icon */}
@@ -187,17 +201,6 @@ function NotificationsPage() {
                                         </span>
                                     )}
                                 </div>
-
-                                {/* Delete button */}
-                                <button
-                                    onClick={(e) => handleDelete(e, notification.id)}
-                                    className="flex-shrink-0 p-2 rounded-lg text-text-muted opacity-0 group-hover:opacity-100 hover:bg-danger/10 hover:text-danger transition-all"
-                                    title="Delete notification"
-                                >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
                             </div>
                         );
                     })}
