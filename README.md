@@ -11,7 +11,7 @@ The system supports Admins, Managers, and Employees, each with clearly defined r
 ## ✨ Features
 
 ### 👥 Role-Based Access Control
-- **Admin** - Full organization control, user management, settings
+- **Admin** - Full organization control, user management, Organization settings
 - **Manager** - Project creation, task assignment, team management
 - **Employee** - View assigned tasks, update status
 
