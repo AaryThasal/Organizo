@@ -61,26 +61,29 @@ function Navbar() {
 
     return (
         <header
-            className={`fixed top-0 right-0 h-16 bg-dark-card border-b border-dark-border z-30 transition-all duration-300 ${sidebarOpen ? 'left-64' : 'left-20'
+            className={`fixed top-0 right-0 h-[72px] bg-dark-card border-b border-dark-border z-30 transition-all duration-300 ${sidebarOpen ? 'left-64' : 'left-20'
                 }`}
         >
-            <div className="h-full flex items-center justify-between px-6">
-                <div className="flex items-center gap-4">
+            <div className="h-full flex items-center justify-between px-8">
+                <div className="flex items-center gap-5">
                     <button
                         onClick={() => dispatch(toggleSidebar())}
-                        className="p-2 rounded-lg text-text-secondary hover:bg-dark-elevated hover:text-text-primary transition-colors"
+                        className="p-2.5 rounded-xl text-text-secondary hover:bg-dark-elevated hover:text-text-primary transition-colors"
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
 
-                    <div>
-                        <h1 className="text-base font-semibold text-text-primary leading-tight">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-lg font-bold text-text-primary tracking-tight">
                             {user?.role === 'admin' ? 'Admin' : user?.role === 'manager' ? 'Manager' : 'Employee'} Dashboard
                         </h1>
                         {organization && (
-                            <p className="text-xs text-text-muted">{organization.name}</p>
+                            <>
+                                <span className="text-dark-border text-lg select-none">•</span>
+                                <span className="text-base text-text-muted font-semibold">{organization.name}</span>
+                            </>
                         )}
                     </div>
                 </div>
@@ -89,7 +92,7 @@ function Navbar() {
                     <div className="relative" ref={notificationRef}>
                         <button
                             onClick={() => setShowNotifications(!showNotifications)}
-                            className="relative p-2 rounded-lg text-text-secondary hover:bg-dark-elevated hover:text-text-primary transition-colors"
+                            className="relative p-2.5 rounded-xl text-text-secondary hover:bg-dark-elevated hover:text-text-primary transition-colors"
                         >
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />

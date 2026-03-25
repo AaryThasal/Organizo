@@ -13,7 +13,7 @@ function DashboardLayout() {
             <Navbar />
 
             <main
-                className={`pt-16 min-h-screen transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'
+                className={`pt-[72px] min-h-screen transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'
                     }`}
             >
                 <div className="p-6">
