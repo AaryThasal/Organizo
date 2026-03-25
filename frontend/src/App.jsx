@@ -20,6 +20,7 @@ import EmployeesPage from './pages/users/EmployeesPage';
 import PendingRequestsPage from './pages/admin/PendingRequestsPage';
 import MyTasksPage from './pages/tasks/MyTasksPage';
 import SettingsPage from './pages/settings/SettingsPage';
+import NotificationsPage from './pages/notifications/NotificationsPage';
 
 // Main app component with routes
 function AppContent() {
@@ -80,6 +81,7 @@ function AppContent() {
             </ProtectedRoute>
           } />
           <Route path="/my-tasks" element={<MyTasksPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
