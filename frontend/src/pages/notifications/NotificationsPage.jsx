@@ -19,6 +19,8 @@ function NotificationsPage() {
     const navigate = useNavigate();
     const { notifications, unreadCount, isLoading } = useSelector((state) => state.notifications);
     const [filter, setFilter] = useState('all');
+    const [selectMode, setSelectMode] = useState(false);
+    const [selected, setSelected] = useState(new Set());
 
     const refreshNotifications = useCallback(() => {
         dispatch(fetchNotifications());
@@ -35,6 +37,10 @@ function NotificationsPage() {
         : notifications;
 
     const handleNotificationClick = (notification) => {
+        if (selectMode) {
+            toggleSelect(notification.id);
+            return;
+        }
         if (!notification.is_read) {
             dispatch(markAsRead(notification.id));
         }
@@ -44,13 +50,32 @@ function NotificationsPage() {
         }
     };
 
-    const handleDeleteAll = async () => {
-        const toDelete = filteredNotifications;
-        if (toDelete.length === 0) return;
-        for (const n of toDelete) {
-            await dispatch(deleteNotification(n.id));
+    const toggleSelect = (id) => {
+        setSelected((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
+    const handleDeleteSelected = async () => {
+        if (selected.size === 0) return;
+        const ids = [...selected];
+        for (const id of ids) {
+            await dispatch(deleteNotification(id));
         }
-        dispatch(showToast({ type: 'success', message: `${toDelete.length} notification${toDelete.length > 1 ? 's' : ''} deleted` }));
+        dispatch(showToast({ type: 'success', message: `${ids.length} notification${ids.length > 1 ? 's' : ''} deleted` }));
+        setSelected(new Set());
+        setSelectMode(false);
+    };
+
+    const handleCancelSelect = () => {
+        setSelected(new Set());
+        setSelectMode(false);
     };
 
     const handleMarkAllRead = async () => {
@@ -93,7 +118,7 @@ function NotificationsPage() {
                 )}
             </div>
 
-            {/* Filter tabs + Delete All */}
+            {/* Filter tabs + Delete toggle */}
             <div className="flex items-center justify-between mb-6">
                 <div className="flex gap-1 p-1 bg-dark-elevated rounded-xl w-fit">
                     {[
@@ -124,13 +149,41 @@ function NotificationsPage() {
                 </div>
 
                 {filteredNotifications.length > 0 && (
-                    <div className="p-1 bg-dark-elevated rounded-xl w-fit">
-                        <button
-                            onClick={handleDeleteAll}
-                            className="px-4 py-2 text-sm font-medium rounded-lg text-text-secondary hover:text-text-primary transition-all duration-200"
-                        >
-                            Delete All
-                        </button>
+                    <div className="flex gap-2 items-center">
+                        {selectMode ? (
+                            <>
+                                <div className="p-1 bg-dark-elevated rounded-xl w-fit">
+                                    <button
+                                        onClick={handleCancelSelect}
+                                        className="px-4 py-2 text-sm font-medium rounded-lg text-text-secondary hover:text-text-primary transition-all duration-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                                <div className="p-1 bg-dark-elevated rounded-xl w-fit">
+                                    <button
+                                        onClick={handleDeleteSelected}
+                                        disabled={selected.size === 0}
+                                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                                            selected.size > 0
+                                                ? 'text-danger hover:bg-danger/10'
+                                                : 'text-text-muted cursor-not-allowed'
+                                        }`}
+                                    >
+                                        Delete{selected.size > 0 ? ` (${selected.size})` : ''}
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="p-1 bg-dark-elevated rounded-xl w-fit">
+                                <button
+                                    onClick={() => setSelectMode(true)}
+                                    className="px-4 py-2 text-sm font-medium rounded-lg text-text-secondary hover:text-text-primary transition-all duration-200"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -152,21 +205,39 @@ function NotificationsPage() {
                         const typeInfo = getNotificationTypeInfo(notification.type);
                         const iconPath = getNotificationIcon(notification.type);
                         const route = getNotificationRoute(notification);
+                        const isSelected = selected.has(notification.id);
 
                         return (
                             <div
                                 key={notification.id}
                                 onClick={() => handleNotificationClick(notification)}
-                                className={`group relative flex items-start gap-4 p-4 rounded-xl transition-all duration-200 ${
-                                    route ? 'cursor-pointer' : 'cursor-default'
-                                } ${
-                                    !notification.is_read
-                                        ? 'bg-dark-card border border-primary-500/20 shadow-soft'
-                                        : 'bg-dark-card border border-dark-border hover:border-dark-elevated'
+                                className={`group relative flex items-start gap-4 p-4 rounded-xl transition-all duration-200 cursor-pointer ${
+                                    isSelected
+                                        ? 'bg-danger/5 border border-danger/30'
+                                        : !notification.is_read
+                                            ? 'bg-dark-card border border-primary-500/20 shadow-soft'
+                                            : 'bg-dark-card border border-dark-border hover:border-dark-elevated'
                                 }`}
                             >
+                                {/* Selection checkbox */}
+                                {selectMode && (
+                                    <div className="flex-shrink-0 flex items-center h-10">
+                                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                                            isSelected
+                                                ? 'bg-danger border-danger'
+                                                : 'border-dark-border hover:border-text-muted'
+                                        }`}>
+                                            {isSelected && (
+                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Unread dot */}
-                                {!notification.is_read && (
+                                {!notification.is_read && !selectMode && (
                                     <div className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-primary-500 shadow-glow" />
                                 )}
 
@@ -192,7 +263,7 @@ function NotificationsPage() {
                                     }`}>
                                         {notification.message}
                                     </p>
-                                    {route && (
+                                    {route && !selectMode && (
                                         <span className="inline-flex items-center gap-1 mt-2 text-xs text-primary-400 opacity-0 group-hover:opacity-100 transition-opacity">
                                             View details
                                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
