@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../store/authSlice';
+import OrganizoLogo from '../../assets/logo/OrganizoLogo.png';
 
 const getNavItems = (role) => {
     const commonItems = [
@@ -147,8 +148,8 @@ function Sidebar() {
             <div className="flex flex-col h-full">
                 <div className="h-16 flex items-center px-6 border-b border-dark-border">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-glow">
-                            <span className="text-white font-bold text-sm">O</span>
+                        <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shadow-glow">
+                            <img src={OrganizoLogo} alt="Organizo" className="w-full h-full object-contain" />
                         </div>
                         {sidebarOpen && (
                             <span className="text-lg font-bold text-text-primary">Organizo</span>

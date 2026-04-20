@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { login, clearError } from '../../store/authSlice';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import OrganizoLogo from '../../assets/logo/OrganizoLogo.png';
 
 // Login page with email/password form
 function LoginPage() {
@@ -52,7 +53,8 @@ function LoginPage() {
         <div className="min-h-screen bg-dark flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-primary-500/10 border border-primary-500/20 mb-4">
+                    <div className="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-2xl bg-primary-500/10 border border-primary-500/20 mb-4">
+                        <img src={OrganizoLogo} alt="Organizo" className="w-10 h-10 object-contain rounded-lg" />
                         <span className="text-3xl font-bold text-gradient">Organizo</span>
                     </div>
                     <h1 className="text-3xl font-bold text-text-primary">Welcome back</h1>
