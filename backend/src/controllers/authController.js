@@ -98,6 +98,7 @@ async function registerAdmin(req, res) {
                     organization: {
                         id: organization.id,
                         name: organization.name,
+                        logo_url: organization.logo_url || null,
                         joinCode: organization.join_code
                     },
                     token
@@ -241,7 +242,7 @@ async function login(req, res) {
         // Get organization info if user belongs to one
         let organization = null;
         if (user.organization_id) {
-            const orgResult = await db.query('SELECT id, name FROM organizations WHERE id = $1', [user.organization_id]);
+            const orgResult = await db.query('SELECT id, name, logo_url FROM organizations WHERE id = $1', [user.organization_id]);
             if (orgResult.rows.length > 0) {
                 organization = orgResult.rows[0];
             }
@@ -358,7 +359,7 @@ async function getCurrentUser(req, res) {
         let organization = null;
         if (req.user.organization_id) {
             const orgResult = await db.query(
-                'SELECT id, name FROM organizations WHERE id = $1',
+                'SELECT id, name, logo_url FROM organizations WHERE id = $1',
                 [req.user.organization_id]
             );
             if (orgResult.rows.length > 0) {

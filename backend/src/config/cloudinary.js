@@ -22,6 +22,18 @@ const storage = new CloudinaryStorage({
     },
 });
 
+// Configure storage for organization logos (separate folder, no face gravity)
+const logoStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'organizo-logos',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
+        transformation: [
+            { width: 200, height: 200, crop: 'fill', gravity: 'center' }
+        ],
+    },
+});
+
 // File filter to only allow images
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -34,6 +46,15 @@ const fileFilter = (req, file, cb) => {
 // Create multer upload middleware
 const upload = multer({
     storage: storage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB max file size
+    },
+});
+
+// Create multer upload middleware for organization logos
+const logoUpload = multer({
+    storage: logoStorage,
     fileFilter: fileFilter,
     limits: {
         fileSize: 5 * 1024 * 1024, // 5MB max file size
@@ -55,13 +76,20 @@ const deleteImage = async (publicId) => {
 const getPublicIdFromUrl = (url) => {
     if (!url) return null;
     
-    const matches = url.match(/\/organizo-profiles\/([^.]+)/);
-    return matches ? `organizo-profiles/${matches[1]}` : null;
+    // Match both profile and logo folders
+    const profileMatch = url.match(/\/organizo-profiles\/([^.]+)/);
+    if (profileMatch) return `organizo-profiles/${profileMatch[1]}`;
+    
+    const logoMatch = url.match(/\/organizo-logos\/([^.]+)/);
+    if (logoMatch) return `organizo-logos/${logoMatch[1]}`;
+    
+    return null;
 };
 
 module.exports = {
     cloudinary,
     upload,
+    logoUpload,
     deleteImage,
     getPublicIdFromUrl,
 };

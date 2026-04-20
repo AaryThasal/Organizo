@@ -2,6 +2,7 @@
 
 const db = require('../config/db');
 const { generateJoinCode } = require('../utils/helpers');
+const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
 
 async function getOrganization(req, res) {
     try {
@@ -15,7 +16,7 @@ async function getOrganization(req, res) {
         }
 
         const orgResult = await db.query(
-            'SELECT id, name, created_at, updated_at FROM organizations WHERE id = $1',
+            'SELECT id, name, logo_url, created_at, updated_at FROM organizations WHERE id = $1',
             [organizationId]
         );
 
@@ -171,9 +172,101 @@ async function regenerateJoinCode(req, res) {
     }
 }
 
+async function uploadLogo(req, res) {
+    try {
+        const organizationId = req.user.organization_id;
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No image file provided.'
+            });
+        }
+
+        // Get current logo to delete old one from Cloudinary
+        const currentOrg = await db.query(
+            'SELECT logo_url FROM organizations WHERE id = $1',
+            [organizationId]
+        );
+
+        if (currentOrg.rows[0]?.logo_url) {
+            const oldPublicId = getPublicIdFromUrl(currentOrg.rows[0].logo_url);
+            await deleteImage(oldPublicId);
+        }
+
+        const logoUrl = req.file.path;
+
+        const result = await db.query(
+            `UPDATE organizations 
+             SET logo_url = $1, updated_at = CURRENT_TIMESTAMP 
+             WHERE id = $2 
+             RETURNING id, name, logo_url`,
+            [logoUrl, organizationId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Organization logo uploaded successfully!',
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Upload logo error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to upload organization logo.'
+        });
+    }
+}
+
+async function removeLogo(req, res) {
+    try {
+        const organizationId = req.user.organization_id;
+
+        const currentOrg = await db.query(
+            'SELECT logo_url FROM organizations WHERE id = $1',
+            [organizationId]
+        );
+
+        if (!currentOrg.rows[0]?.logo_url) {
+            return res.status(400).json({
+                success: false,
+                message: 'No logo to remove.'
+            });
+        }
+
+        // Delete from Cloudinary
+        const publicId = getPublicIdFromUrl(currentOrg.rows[0].logo_url);
+        await deleteImage(publicId);
+
+        const result = await db.query(
+            `UPDATE organizations 
+             SET logo_url = NULL, updated_at = CURRENT_TIMESTAMP 
+             WHERE id = $1 
+             RETURNING id, name, logo_url`,
+            [organizationId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Organization logo removed successfully!',
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Remove logo error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to remove organization logo.'
+        });
+    }
+}
+
 module.exports = {
     getOrganization,
     updateOrganization,
     getJoinCode,
-    regenerateJoinCode
+    regenerateJoinCode,
+    uploadLogo,
+    removeLogo
 };

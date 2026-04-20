@@ -5,6 +5,7 @@ const router = express.Router();
 const organizationController = require('../controllers/organizationController');
 const { authenticateToken } = require('../middlewares/authMiddleware');
 const { requireRole, requireApproved, requireOrganization } = require('../middlewares/roleMiddleware');
+const { logoUpload } = require('../config/cloudinary');
 
 // All routes require authentication
 router.use(authenticateToken);
@@ -40,6 +41,23 @@ router.post(
     requireOrganization,
     requireRole(['admin']),
     organizationController.regenerateJoinCode
+);
+
+// Upload organization logo
+router.post(
+    '/logo',
+    requireOrganization,
+    requireRole(['admin']),
+    logoUpload.single('logo'),
+    organizationController.uploadLogo
+);
+
+// Remove organization logo
+router.delete(
+    '/logo',
+    requireOrganization,
+    requireRole(['admin']),
+    organizationController.removeLogo
 );
 
 module.exports = router;

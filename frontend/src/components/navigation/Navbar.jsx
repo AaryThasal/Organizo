@@ -82,6 +82,13 @@ function Navbar() {
                         {organization && (
                             <>
                                 <span className="text-dark-border text-lg select-none">•</span>
+                                {organization.logo_url && (
+                                    <img
+                                        src={organization.logo_url}
+                                        alt={organization.name}
+                                        className="w-7 h-7 rounded-full object-cover ring-1 ring-dark-border/50 flex-shrink-0"
+                                    />
+                                )}
                                 <span className="text-base text-text-muted font-semibold">{organization.name}</span>
                             </>
                         )}
