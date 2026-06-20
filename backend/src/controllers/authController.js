@@ -424,6 +424,7 @@ async function forgotPassword(req, res) {
 
         // If user doesn't exist, still return the generic success message
         if (userResult.rows.length === 0) {
+            console.log(`ℹ️ Forgot password request for non-existent email: ${email}`);
             return res.json(genericResponse);
         }
 
@@ -446,8 +447,22 @@ async function forgotPassword(req, res) {
             [user.id, otpHash]
         );
 
-        // Send OTP via email
-        await sendPasswordResetEmail(user.email, otp, user.first_name);
+        console.log(`📝 OTP generated for ${user.email}. Attempting to send email...`);
+
+        // Send OTP via email - this can fail on network issues
+        try {
+            await sendPasswordResetEmail(user.email, otp, user.first_name);
+            console.log(`✅ Forgot password OTP sent successfully to ${user.email}`);
+        } catch (emailError) {
+            console.error(`❌ Failed to send forgot password email to ${user.email}:`, {
+                message: emailError.message,
+                code: emailError.code,
+            });
+            
+            // Log the error but still tell user to check email (it might work on retry)
+            // This prevents attackers from knowing if email service is down
+            console.error('Email service is currently unavailable. User will see generic message.');
+        }
 
         res.json(genericResponse);
 
@@ -455,7 +470,7 @@ async function forgotPassword(req, res) {
         console.error('Forgot password error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to process password reset request. Please try again.'
+            message: 'Failed to process password reset request. Please try again later.'
         });
     }
 }

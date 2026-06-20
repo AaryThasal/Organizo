@@ -3,32 +3,97 @@
 
 const nodemailer = require('nodemailer');
 const dns = require('dns');
+const { promisify } = require('util');
 
-// Force IPv4 DNS resolution to fix "ENETUNREACH" IPv6 connection errors on hosting platforms like Render
-// Node.js 17+ prefers IPv6 by default, which fails on networks without IPv6 routing
+// Force IPv4 DNS resolution globally
+// This prevents "ENETUNREACH" IPv6 connection errors on hosting platforms like Render
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
 
-// Create reusable transporter using Gmail SMTP
+// Override Node.js DNS lookups at module level for extra safety
+const originalLookup = dns.lookup;
+dns.lookup = function(hostname, options, callback) {
+    // Handle both callback and promise-based calls
+    if (typeof options === 'function') {
+        callback = options;
+        options = {};
+    }
+    
+    // Force IPv4
+    const opts = { ...options, family: 4 };
+    
+    if (typeof callback === 'function') {
+        return originalLookup.call(dns, hostname, opts, callback);
+    } else {
+        return originalLookup.call(dns, hostname, opts);
+    }
+};
+
+// Create reusable transporter using Gmail SMTP with enhanced configuration
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587, // Use 587 (STARTTLS) instead of 465, as Render often blocks/times out 465
     secure: false, // Must be false for 587. It will automatically upgrade to secure via STARTTLS
-    family: 4, // Force IPv4
+    family: 4, // Force IPv4 explicitly
+    connectionTimeout: 10000, // 10 seconds timeout for connection
+    socketTimeout: 10000, // 10 seconds timeout for socket
+    pool: {
+        maxConnections: 1,
+        maxMessages: 5,
+        rateDelta: 2000, // 2 seconds between messages
+        rateLimit: true,
+    },
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_APP_PASSWORD,
     },
+    logger: true, // Enable logging for debugging
+    debug: process.env.NODE_ENV === 'development', // Only debug in development
 });
 
-// Verify the transporter connection on startup
-transporter.verify()
-    .then(() => console.log('✅ Email service connected (Gmail SMTP)'))
-    .catch((err) => console.error('❌ Email service error:', err.message));
+// Enhanced transporter verification with retry logic
+async function verifyEmailTransporter() {
+    const maxRetries = 3;
+    let retries = 0;
+    
+    const attemptVerify = async () => {
+        try {
+            await transporter.verify();
+            console.log('✅ Email service connected (Gmail SMTP on Render)');
+            return true;
+        } catch (error) {
+            retries++;
+            console.error(`❌ Email service verification attempt ${retries}/${maxRetries} failed:`, {
+                message: error.message,
+                code: error.code,
+                errno: error.errno,
+                syscall: error.syscall,
+            });
+            
+            if (retries < maxRetries) {
+                // Exponential backoff: 2s, 4s, 8s
+                const delay = Math.pow(2, retries) * 1000;
+                console.log(`⏳ Retrying email verification in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return attemptVerify();
+            }
+            
+            console.warn('⚠️ Email service may not be available. Forgot password feature might fail.');
+            return false;
+        }
+    };
+    
+    return attemptVerify();
+}
+
+// Verify on startup (non-blocking)
+verifyEmailTransporter().catch(err => {
+    console.error('Critical: Email service verification failed:', err);
+});
 
 /**
- * Send a password reset OTP email
+ * Send a password reset OTP email with automatic retry logic
  * @param {string} to - Recipient email address
  * @param {string} otp - The 6-digit OTP code (plaintext, for the email body only)
  * @param {string} firstName - User's first name for personalization
@@ -41,18 +106,48 @@ async function sendPasswordResetEmail(to, otp, firstName) {
         html: getPasswordResetTemplate(otp, firstName),
     };
 
-    try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`📧 Password reset email sent to ${to} (ID: ${info.messageId})`);
-        return { success: true, messageId: info.messageId };
-    } catch (error) {
-        console.error('Email send error:', error);
-        throw new Error('Failed to send password reset email.');
+    const maxRetries = 3;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`📧 Sending password reset email to ${to} (attempt ${attempt}/${maxRetries})...`);
+            const info = await transporter.sendMail(mailOptions);
+            console.log(`✅ Password reset email sent to ${to} (ID: ${info.messageId})`);
+            return { success: true, messageId: info.messageId };
+        } catch (error) {
+            lastError = error;
+            console.error(`❌ Email send attempt ${attempt}/${maxRetries} failed:`, {
+                to,
+                message: error.message,
+                code: error.code,
+                errno: error.errno,
+                syscall: error.syscall,
+                command: error.command,
+            });
+
+            // Don't retry on permanent errors (auth, invalid email, etc.)
+            if (error.code === 'EAUTH' || error.message.includes('Invalid email')) {
+                console.error('Permanent error - not retrying:', error.message);
+                throw new Error('Failed to send password reset email: Invalid credentials or email address.');
+            }
+
+            // Retry on temporary/network errors
+            if (attempt < maxRetries) {
+                const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+                console.log(`⏳ Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
     }
+
+    // All retries failed
+    console.error('Final error after all retries:', lastError);
+    throw new Error(`Failed to send password reset email after ${maxRetries} attempts: ${lastError.message}`);
 }
 
 /**
- * Send a temporary password email (for admin-initiated resets)
+ * Send a temporary password email with automatic retry logic
  * @param {string} to - Recipient email address
  * @param {string} tempPassword - The temporary password
  * @param {string} firstName - User's first name for personalization
@@ -65,14 +160,43 @@ async function sendTempPasswordEmail(to, tempPassword, firstName) {
         html: getTempPasswordTemplate(tempPassword, firstName),
     };
 
-    try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`📧 Temp password email sent to ${to} (ID: ${info.messageId})`);
-        return { success: true, messageId: info.messageId };
-    } catch (error) {
-        console.error('Email send error:', error);
-        throw new Error('Failed to send temporary password email.');
+    const maxRetries = 3;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            console.log(`📧 Sending temp password email to ${to} (attempt ${attempt}/${maxRetries})...`);
+            const info = await transporter.sendMail(mailOptions);
+            console.log(`✅ Temp password email sent to ${to} (ID: ${info.messageId})`);
+            return { success: true, messageId: info.messageId };
+        } catch (error) {
+            lastError = error;
+            console.error(`❌ Email send attempt ${attempt}/${maxRetries} failed:`, {
+                to,
+                message: error.message,
+                code: error.code,
+                errno: error.errno,
+                syscall: error.syscall,
+            });
+
+            // Don't retry on permanent errors
+            if (error.code === 'EAUTH' || error.message.includes('Invalid email')) {
+                console.error('Permanent error - not retrying:', error.message);
+                throw new Error('Failed to send temp password email: Invalid credentials or email address.');
+            }
+
+            // Retry on temporary/network errors
+            if (attempt < maxRetries) {
+                const delay = Math.pow(2, attempt) * 1000;
+                console.log(`⏳ Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
     }
+
+    // All retries failed
+    console.error('Final error after all retries:', lastError);
+    throw new Error(`Failed to send temp password email after ${maxRetries} attempts: ${lastError.message}`);
 }
 
 /**
