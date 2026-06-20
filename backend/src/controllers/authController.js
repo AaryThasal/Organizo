@@ -1,9 +1,11 @@
-// Auth Controller - handles registration, login, and organization joining
+// Auth Controller - handles registration, login, organization joining, and password reset
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const db = require('../config/db');
 const { generateJoinCode, formatUserResponse, isValidEmail, isEmpty } = require('../utils/helpers');
+const { sendPasswordResetEmail } = require('../config/email');
 
 const SALT_ROUNDS = 10;
 
@@ -384,10 +386,180 @@ async function getCurrentUser(req, res) {
     }
 }
 
+// Generate a 6-digit numeric OTP
+function generateOTP() {
+    return crypto.randomInt(100000, 999999).toString();
+}
+
+async function forgotPassword(req, res) {
+    try {
+        const { email } = req.body;
+
+        // Validate email
+        if (isEmpty(email)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email is required.'
+            });
+        }
+
+        if (!isValidEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid email address.'
+            });
+        }
+
+        // Always return success to prevent email enumeration
+        const genericResponse = {
+            success: true,
+            message: 'If an account with that email exists, a password reset code has been sent.'
+        };
+
+        // Look up user by email
+        const userResult = await db.query(
+            'SELECT id, first_name, email FROM users WHERE email = $1',
+            [email.toLowerCase()]
+        );
+
+        // If user doesn't exist, still return the generic success message
+        if (userResult.rows.length === 0) {
+            return res.json(genericResponse);
+        }
+
+        const user = userResult.rows[0];
+
+        // Invalidate any existing unused tokens for this user
+        await db.query(
+            'UPDATE password_reset_tokens SET used = TRUE WHERE user_id = $1 AND used = FALSE',
+            [user.id]
+        );
+
+        // Generate OTP and hash it for storage
+        const otp = generateOTP();
+        const otpHash = await bcrypt.hash(otp, SALT_ROUNDS);
+
+        // Store hashed OTP with 15-minute expiry
+        await db.query(
+            `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
+             VALUES ($1, $2, NOW() + INTERVAL '15 minutes')`,
+            [user.id, otpHash]
+        );
+
+        // Send OTP via email
+        await sendPasswordResetEmail(user.email, otp, user.first_name);
+
+        res.json(genericResponse);
+
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to process password reset request. Please try again.'
+        });
+    }
+}
+
+async function resetPassword(req, res) {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        // Validate required fields
+        if (isEmpty(email) || isEmpty(otp) || isEmpty(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email, reset code, and new password are required.'
+            });
+        }
+
+        // Validate password length
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'New password must be at least 6 characters long.'
+            });
+        }
+
+        // Find user by email
+        const userResult = await db.query(
+            'SELECT id FROM users WHERE email = $1',
+            [email.toLowerCase()]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired reset code.'
+            });
+        }
+
+        const user = userResult.rows[0];
+
+        // Get the most recent unused, non-expired token for this user
+        const tokenResult = await db.query(
+            `SELECT id, token_hash FROM password_reset_tokens
+             WHERE user_id = $1 AND used = FALSE AND expires_at > NOW()
+             ORDER BY created_at DESC LIMIT 1`,
+            [user.id]
+        );
+
+        if (tokenResult.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired reset code.'
+            });
+        }
+
+        const tokenRecord = tokenResult.rows[0];
+
+        // Verify OTP against the stored hash
+        const isValidOTP = await bcrypt.compare(otp, tokenRecord.token_hash);
+        if (!isValidOTP) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired reset code.'
+            });
+        }
+
+        // Hash new password and update user
+        const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+        await db.query(
+            'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+            [newPasswordHash, user.id]
+        );
+
+        // Mark token as used and invalidate all tokens for this user
+        await db.query(
+            'UPDATE password_reset_tokens SET used = TRUE WHERE user_id = $1',
+            [user.id]
+        );
+
+        // Clean up expired tokens (housekeeping)
+        await db.query(
+            'DELETE FROM password_reset_tokens WHERE expires_at < NOW()'
+        );
+
+        res.json({
+            success: true,
+            message: 'Password reset successfully! You can now log in with your new password.'
+        });
+
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to reset password. Please try again.'
+        });
+    }
+}
+
 module.exports = {
     registerAdmin,
     registerUser,
     login,
     joinOrganization,
-    getCurrentUser
+    getCurrentUser,
+    forgotPassword,
+    resetPassword
 };

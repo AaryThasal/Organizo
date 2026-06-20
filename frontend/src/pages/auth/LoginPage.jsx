@@ -89,6 +89,15 @@ function LoginPage() {
                             required
                         />
 
+                        <div className="flex justify-end -mt-2 mb-2">
+                            <Link
+                                to="/forgot-password"
+                                className="text-sm text-primary-400 hover:text-primary-300 font-medium transition-colors"
+                            >
+                                Forgot Password?
+                            </Link>
+                        </div>
+
                         <Button
                             type="submit"
                             loading={isLoading}

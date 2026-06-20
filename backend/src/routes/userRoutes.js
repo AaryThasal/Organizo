@@ -72,4 +72,12 @@ router.delete(
     userController.removeUser
 );
 
+// Admin-initiated password reset (sends temp password via email)
+router.post(
+    '/:id/reset-password',
+    requireOrganization,
+    requireRole(['admin']),
+    userController.adminResetPassword
+);
+
 module.exports = router;

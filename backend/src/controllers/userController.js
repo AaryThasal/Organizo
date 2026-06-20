@@ -1,9 +1,11 @@
-// User Controller - handles user management, approval, and profile updates
+// User Controller - handles user management, approval, profile updates, and admin password resets
 
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const db = require('../config/db');
 const { formatUserResponse, isEmpty, isValidEmail } = require('../utils/helpers');
 const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
+const { sendTempPasswordEmail } = require('../config/email');
 
 const SALT_ROUNDS = 10;
 
@@ -491,6 +493,80 @@ async function removeProfileImage(req, res) {
     }
 }
 
+async function adminResetPassword(req, res) {
+    try {
+        const { id } = req.params;
+        const organizationId = req.user.organization_id;
+        const adminId = req.user.id;
+
+        // Prevent admin from resetting their own password through this endpoint
+        if (id === adminId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please use the Forgot Password feature to reset your own password.'
+            });
+        }
+
+        // Find the user and verify they belong to the same organization
+        const userResult = await db.query(
+            'SELECT * FROM users WHERE id = $1 AND organization_id = $2',
+            [id, organizationId]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.'
+            });
+        }
+
+        const user = userResult.rows[0];
+
+        // Prevent resetting another admin's password
+        if (user.role === 'admin') {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot reset another admin\'s password.'
+            });
+        }
+
+        // Generate a secure temporary password (12 chars, alphanumeric)
+        const tempPassword = crypto.randomBytes(9).toString('base64url').slice(0, 12);
+
+        // Hash and store the temporary password
+        const passwordHash = await bcrypt.hash(tempPassword, SALT_ROUNDS);
+
+        await db.query(
+            `UPDATE users 
+             SET password_hash = $1, force_password_change = TRUE, updated_at = CURRENT_TIMESTAMP 
+             WHERE id = $2`,
+            [passwordHash, id]
+        );
+
+        // Send temporary password via email
+        await sendTempPasswordEmail(user.email, tempPassword, user.first_name);
+
+        // Create in-app notification for the user
+        await db.query(
+            `INSERT INTO notifications (user_id, type, message) 
+             VALUES ($1, 'password_reset', 'Your password has been reset by an admin. Check your email for a temporary password.')`,
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: `Password for ${user.first_name} ${user.last_name} has been reset. A temporary password has been sent to their email.`
+        });
+
+    } catch (error) {
+        console.error('Admin reset password error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to reset password.'
+        });
+    }
+}
+
 module.exports = {
     getUsers,
     getPendingRequests,
@@ -500,5 +576,6 @@ module.exports = {
     removeUser,
     getUserById,
     uploadProfileImage,
-    removeProfileImage
+    removeProfileImage,
+    adminResetPassword
 };

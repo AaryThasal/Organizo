@@ -12,6 +12,8 @@ import { LoadingScreen } from './components/ui/Spinner';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import JoinOrganizationPage from './pages/auth/JoinOrganizationPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
 import DashboardPage from './pages/dashboard/DashboardPage';
 import ProjectsPage from './pages/projects/ProjectsPage';
@@ -55,6 +57,12 @@ function AppContent() {
         } />
         <Route path="/register" element={
           isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <RegisterPage />
+        } />
+        <Route path="/forgot-password" element={
+          isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <ForgotPasswordPage />
+        } />
+        <Route path="/reset-password" element={
+          isAuthenticated ? <Navigate to={getAuthenticatedRedirect()} replace /> : <ResetPasswordPage />
         } />
         <Route path="/join-organization" element={
           <ProtectedRoute requireApproved={false}>
