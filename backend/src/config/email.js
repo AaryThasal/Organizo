@@ -2,10 +2,19 @@
 // Designed to be reusable for future features (email verification, notifications, etc.)
 
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Force IPv4 DNS resolution to fix "ENETUNREACH" IPv6 connection errors on hosting platforms like Render
+// Node.js 17+ prefers IPv6 by default, which fails on networks without IPv6 routing
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
 
 // Create reusable transporter using Gmail SMTP
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_APP_PASSWORD,

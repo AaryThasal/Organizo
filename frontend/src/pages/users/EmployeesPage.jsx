@@ -5,6 +5,8 @@ import Avatar from '../../components/ui/Avatar';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
+import Modal from '../../components/ui/Modal';
+import Button from '../../components/ui/Button';
 
 function EmployeesPage() {
     const { user } = useSelector((state) => state.auth);
@@ -13,6 +15,13 @@ function EmployeesPage() {
     const [filter, setFilter] = useState('all');
     // Search query for filtering by name or email
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Admin reset password state
+    const [resetModal, setResetModal] = useState({ open: false, employee: null });
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetResult, setResetResult] = useState(null); // { type: 'success' | 'error', message }
+
+    const isAdmin = user?.role === 'admin';
 
     useEffect(() => {
         fetchEmployees();
@@ -46,6 +55,31 @@ function EmployeesPage() {
             return matchesRole && matchesSearch;
         });
     }, [employees, filter, searchQuery]);
+
+    // Admin reset password handler
+    const handleResetPassword = async () => {
+        if (!resetModal.employee) return;
+
+        setResetLoading(true);
+        setResetResult(null);
+
+        try {
+            const res = await api.post(`/users/${resetModal.employee.id}/reset-password`);
+            setResetResult({ type: 'success', message: res.data.message });
+        } catch (error) {
+            setResetResult({
+                type: 'error',
+                message: error.response?.data?.message || 'Failed to reset password.',
+            });
+        } finally {
+            setResetLoading(false);
+        }
+    };
+
+    const closeResetModal = () => {
+        setResetModal({ open: false, employee: null });
+        setResetResult(null);
+    };
 
     if (loading) {
         return (
@@ -131,6 +165,7 @@ function EmployeesPage() {
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Joined</th>
+                                {isAdmin && <th className="text-right">Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -162,15 +197,99 @@ function EmployeesPage() {
                                     <td className="text-text-secondary whitespace-nowrap">
                                         {new Date(employee.created_at).toLocaleDateString()}
                                     </td>
+                                    {/* Actions column — admin only, not for self or other admins */}
+                                    {isAdmin && (
+                                        <td className="text-right">
+                                            {employee.id !== user?.id && employee.role !== 'admin' && (
+                                                <button
+                                                    onClick={() => setResetModal({ open: true, employee })}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all duration-200"
+                                                    title="Reset this user's password"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                                                    </svg>
+                                                    Reset Password
+                                                </button>
+                                            )}
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             )}
+
+            {/* Reset Password Confirmation Modal */}
+            <Modal
+                isOpen={resetModal.open}
+                onClose={closeResetModal}
+                title="Reset User Password"
+                size="sm"
+            >
+                {resetResult?.type === 'success' ? (
+                    // Success state
+                    <div className="text-center py-4">
+                        <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-success/10 border-2 border-success flex items-center justify-center">
+                            <svg className="w-7 h-7 text-success" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                        </div>
+                        <p className="text-text-primary font-medium mb-2">Password Reset Sent</p>
+                        <p className="text-text-secondary text-sm">{resetResult.message}</p>
+                        <Button onClick={closeResetModal} variant="secondary" className="mt-6 w-full">
+                            Done
+                        </Button>
+                    </div>
+                ) : (
+                    // Confirmation state
+                    <div className="py-2">
+                        {resetResult?.type === 'error' && (
+                            <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm">
+                                {resetResult.message}
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-dark-elevated border border-dark-border">
+                            <Avatar
+                                firstName={resetModal.employee?.first_name}
+                                lastName={resetModal.employee?.last_name}
+                                size="md"
+                            />
+                            <div>
+                                <p className="font-medium text-text-primary">
+                                    {resetModal.employee?.first_name} {resetModal.employee?.last_name}
+                                </p>
+                                <p className="text-sm text-text-secondary">{resetModal.employee?.email}</p>
+                            </div>
+                        </div>
+
+                        <p className="text-sm text-text-secondary mb-2">This will:</p>
+                        <ul className="text-sm text-text-secondary space-y-1 mb-6 ml-4 list-disc">
+                            <li>Generate a secure temporary password</li>
+                            <li>Send it directly to the user's email</li>
+                            <li>The user will need to change it after logging in</li>
+                        </ul>
+
+                        <div className="flex gap-3">
+                            <Button onClick={closeResetModal} variant="secondary" className="flex-1">
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleResetPassword}
+                                loading={resetLoading}
+                                variant="primary"
+                                className="flex-1"
+                            >
+                                Reset Password
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }
 
 export default EmployeesPage;
-
