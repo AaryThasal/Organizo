@@ -3,54 +3,101 @@
 
 const nodemailer = require('nodemailer');
 const dns = require('dns');
-const { promisify } = require('util');
+const net = require('net');
 
-// Force IPv4 DNS resolution globally
-// This prevents "ENETUNREACH" IPv6 connection errors on hosting platforms like Render
+// ===== CRITICAL: Force IPv4 ONLY (Render doesn't support IPv6) =====
+
+// 1. Set DNS to prefer IPv4
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
 
-// Override Node.js DNS lookups at module level for extra safety
+// 2. Override DNS lookup to ONLY resolve IPv4 addresses
 const originalLookup = dns.lookup;
 dns.lookup = function(hostname, options, callback) {
-    // Handle both callback and promise-based calls
+    // Force family to 4 (IPv4 only)
+    if (typeof options === 'function') {
+        callback = options;
+        options = { family: 4 };
+    } else {
+        options = { ...options, family: 4 };
+    }
+    return originalLookup.call(dns, hostname, options, callback);
+};
+
+// 3. Override getaddrinfo to prefer IPv4 at the node level
+dns.getaddrinfo = (function(original) {
+    return function(hostname, family, callback) {
+        // Force IPv4 only
+        if (typeof family === 'function') {
+            callback = family;
+            family = 4;
+        }
+        family = 4; // Always IPv4 for SMTP
+        return original.call(dns, hostname, family, callback);
+    };
+})(dns.getaddrinfo || (() => {}));
+
+// 4. Create custom lookup for Nodemailer that returns IPv4 address directly
+const customLookup = (hostname, options, callback) => {
+    // Handle both callback and promise modes
     if (typeof options === 'function') {
         callback = options;
         options = {};
     }
-    
-    // Force IPv4
-    const opts = { ...options, family: 4 };
-    
-    if (typeof callback === 'function') {
-        return originalLookup.call(dns, hostname, opts, callback);
-    } else {
-        return originalLookup.call(dns, hostname, opts);
+
+    // For Gmail, use direct IPv4 addresses instead of DNS lookup
+    // This bypasses DNS resolution entirely
+    const ipv4Addresses = {
+        'smtp.gmail.com': ['108.177.98.109', '142.250.185.109', '142.250.80.109'],
+    };
+
+    if (ipv4Addresses[hostname]) {
+        const address = ipv4Addresses[hostname][0];
+        const result = {
+            address,
+            family: 4,
+        };
+        
+        if (typeof callback === 'function') {
+            process.nextTick(() => callback(null, address, 4));
+        }
+        return result;
     }
+
+    // Fallback to normal IPv4 DNS resolution for other hosts
+    return originalLookup.call(dns, hostname, { ...options, family: 4 }, callback);
 };
 
-// Create reusable transporter using Gmail SMTP with enhanced configuration
+// Create reusable transporter using Gmail SMTP with aggressive IPv4 forcing
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587, // Use 587 (STARTTLS) instead of 465, as Render often blocks/times out 465
-    secure: false, // Must be false for 587. It will automatically upgrade to secure via STARTTLS
-    family: 4, // Force IPv4 explicitly
-    connectionTimeout: 10000, // 10 seconds timeout for connection
-    socketTimeout: 10000, // 10 seconds timeout for socket
+    port: 587,
+    secure: false,
+    family: 4, // Force IPv4
+    lookup: customLookup, // Use custom lookup function
+    connectionTimeout: 15000, // 15 seconds (increased from 10)
+    socketTimeout: 15000,
     pool: {
         maxConnections: 1,
         maxMessages: 5,
-        rateDelta: 2000, // 2 seconds between messages
+        rateDelta: 2000,
         rateLimit: true,
     },
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_APP_PASSWORD,
     },
-    logger: true, // Enable logging for debugging
-    debug: process.env.NODE_ENV === 'development', // Only debug in development
+    logger: true,
+    debug: process.env.NODE_ENV === 'development',
 });
+
+console.log('📧 Email service initializing with forced IPv4 configuration...');
+console.log('   - Host: smtp.gmail.com');
+console.log('   - Port: 587 (STARTTLS)');
+console.log('   - DNS Mode: IPv4-only (custom lookup)');
+console.log('   - Connection Timeout: 15s');
+console.log('   - Retry Attempts: 3 with backoff');
 
 // Enhanced transporter verification with retry logic
 async function verifyEmailTransporter() {
@@ -59,8 +106,10 @@ async function verifyEmailTransporter() {
     
     const attemptVerify = async () => {
         try {
+            console.log(`\n🔍 Email service verification (attempt ${retries + 1}/${maxRetries})...`);
             await transporter.verify();
-            console.log('✅ Email service connected (Gmail SMTP on Render)');
+            console.log('✅ Email service connected (Gmail SMTP on Render - IPv4)');
+            console.log(`📧 Verified email: ${process.env.EMAIL_USER}`);
             return true;
         } catch (error) {
             retries++;
@@ -72,14 +121,15 @@ async function verifyEmailTransporter() {
             });
             
             if (retries < maxRetries) {
-                // Exponential backoff: 2s, 4s, 8s
                 const delay = Math.pow(2, retries) * 1000;
                 console.log(`⏳ Retrying email verification in ${delay}ms...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 return attemptVerify();
             }
             
-            console.warn('⚠️ Email service may not be available. Forgot password feature might fail.');
+            console.warn('\n⚠️  CRITICAL: Email service may not be available.');
+            console.warn('   Forgot password feature will not work.');
+            console.warn('   See DEPLOYMENT_EMAIL_FIX.md for troubleshooting.');
             return false;
         }
     };
@@ -106,44 +156,70 @@ async function sendPasswordResetEmail(to, otp, firstName) {
         html: getPasswordResetTemplate(otp, firstName),
     };
 
-    const maxRetries = 3;
+    const maxRetries = 5;
     let lastError = null;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        let startTime = Date.now();
+        
         try {
-            console.log(`📧 Sending password reset email to ${to} (attempt ${attempt}/${maxRetries})...`);
+            console.log(`\n📧 Sending password reset email to ${to}`);
+            console.log(`   Attempt ${attempt}/${maxRetries}...`);
+            
             const info = await transporter.sendMail(mailOptions);
-            console.log(`✅ Password reset email sent to ${to} (ID: ${info.messageId})`);
+            const duration = Date.now() - startTime;
+            
+            console.log(`✅ Password reset email sent successfully!`);
+            console.log(`   To: ${to}`);
+            console.log(`   Message ID: ${info.messageId}`);
+            console.log(`   Duration: ${duration}ms`);
             return { success: true, messageId: info.messageId };
         } catch (error) {
             lastError = error;
-            console.error(`❌ Email send attempt ${attempt}/${maxRetries} failed:`, {
+            const duration = Date.now() - startTime;
+            
+            console.error(`\n❌ Email send attempt ${attempt}/${maxRetries} failed:`, {
                 to,
                 message: error.message,
                 code: error.code,
-                errno: error.errno,
                 syscall: error.syscall,
-                command: error.command,
+                duration: `${duration}ms`,
             });
 
             // Don't retry on permanent errors (auth, invalid email, etc.)
-            if (error.code === 'EAUTH' || error.message.includes('Invalid email')) {
-                console.error('Permanent error - not retrying:', error.message);
-                throw new Error('Failed to send password reset email: Invalid credentials or email address.');
+            if (error.code === 'EAUTH') {
+                console.error('🛑 Authentication error - Gmail credentials may be invalid');
+                console.error('   Fix: Check EMAIL_USER and EMAIL_APP_PASSWORD on Render');
+                throw new Error('Failed to send email: Invalid Gmail credentials.');
             }
 
-            // Retry on temporary/network errors
+            if (error.message && error.message.includes('Invalid email')) {
+                console.error('🛑 Invalid email address');
+                throw new Error('Failed to send email: Invalid email address.');
+            }
+
+            // Retry on temporary/network errors with increased delay
             if (attempt < maxRetries) {
-                const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
-                console.log(`⏳ Retrying in ${delay}ms...`);
+                const delay = Math.pow(2, attempt) * 1500; // 3s, 6s, 12s, 24s, 48s
+                console.log(`⏳ Waiting ${delay}ms before retry (attempt ${attempt + 1}/${maxRetries})...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
         }
     }
 
     // All retries failed
-    console.error('Final error after all retries:', lastError);
-    throw new Error(`Failed to send password reset email after ${maxRetries} attempts: ${lastError.message}`);
+    console.error('\n🔴 FINAL ERROR: All retry attempts failed');
+    console.error('   Error:', lastError.message);
+    console.error('   Last error code:', lastError.code);
+    
+    // More helpful error message
+    if (lastError.code === 'ETIMEDOUT') {
+        throw new Error('Failed to send email: Connection timeout. Gmail SMTP may be unreachable on this network.');
+    } else if (lastError.code === 'ENETUNREACH') {
+        throw new Error('Failed to send email: Network unreachable. This may be a Render network issue.');
+    } else {
+        throw new Error(`Failed to send email after ${maxRetries} attempts: ${lastError.message}`);
+    }
 }
 
 /**
@@ -160,43 +236,68 @@ async function sendTempPasswordEmail(to, tempPassword, firstName) {
         html: getTempPasswordTemplate(tempPassword, firstName),
     };
 
-    const maxRetries = 3;
+    const maxRetries = 5;
     let lastError = null;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        let startTime = Date.now();
+        
         try {
-            console.log(`📧 Sending temp password email to ${to} (attempt ${attempt}/${maxRetries})...`);
+            console.log(`\n📧 Sending temp password email to ${to}`);
+            console.log(`   Attempt ${attempt}/${maxRetries}...`);
+            
             const info = await transporter.sendMail(mailOptions);
-            console.log(`✅ Temp password email sent to ${to} (ID: ${info.messageId})`);
+            const duration = Date.now() - startTime;
+            
+            console.log(`✅ Temp password email sent successfully!`);
+            console.log(`   To: ${to}`);
+            console.log(`   Message ID: ${info.messageId}`);
+            console.log(`   Duration: ${duration}ms`);
             return { success: true, messageId: info.messageId };
         } catch (error) {
             lastError = error;
-            console.error(`❌ Email send attempt ${attempt}/${maxRetries} failed:`, {
+            const duration = Date.now() - startTime;
+            
+            console.error(`\n❌ Email send attempt ${attempt}/${maxRetries} failed:`, {
                 to,
                 message: error.message,
                 code: error.code,
-                errno: error.errno,
                 syscall: error.syscall,
+                duration: `${duration}ms`,
             });
 
             // Don't retry on permanent errors
-            if (error.code === 'EAUTH' || error.message.includes('Invalid email')) {
-                console.error('Permanent error - not retrying:', error.message);
-                throw new Error('Failed to send temp password email: Invalid credentials or email address.');
+            if (error.code === 'EAUTH') {
+                console.error('🛑 Authentication error - Gmail credentials may be invalid');
+                throw new Error('Failed to send email: Invalid Gmail credentials.');
+            }
+
+            if (error.message && error.message.includes('Invalid email')) {
+                console.error('🛑 Invalid email address');
+                throw new Error('Failed to send email: Invalid email address.');
             }
 
             // Retry on temporary/network errors
             if (attempt < maxRetries) {
-                const delay = Math.pow(2, attempt) * 1000;
-                console.log(`⏳ Retrying in ${delay}ms...`);
+                const delay = Math.pow(2, attempt) * 1500; // 3s, 6s, 12s, 24s, 48s
+                console.log(`⏳ Waiting ${delay}ms before retry (attempt ${attempt + 1}/${maxRetries})...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
             }
         }
     }
 
     // All retries failed
-    console.error('Final error after all retries:', lastError);
-    throw new Error(`Failed to send temp password email after ${maxRetries} attempts: ${lastError.message}`);
+    console.error('\n🔴 FINAL ERROR: All retry attempts failed');
+    console.error('   Error:', lastError.message);
+    console.error('   Last error code:', lastError.code);
+    
+    if (lastError.code === 'ETIMEDOUT') {
+        throw new Error('Failed to send email: Connection timeout. Gmail SMTP may be unreachable.');
+    } else if (lastError.code === 'ENETUNREACH') {
+        throw new Error('Failed to send email: Network unreachable. This may be a Render network issue.');
+    } else {
+        throw new Error(`Failed to send temp password email after ${maxRetries} attempts: ${lastError.message}`);
+    }
 }
 
 /**
