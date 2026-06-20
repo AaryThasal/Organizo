@@ -13,8 +13,8 @@ if (dns.setDefaultResultOrder) {
 // Create reusable transporter using Gmail SMTP
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use SSL
+    port: 587, // Use 587 (STARTTLS) instead of 465, as Render often blocks/times out 465
+    secure: false, // Must be false for 587. It will automatically upgrade to secure via STARTTLS
     family: 4, // Force IPv4
     auth: {
         user: process.env.EMAIL_USER,

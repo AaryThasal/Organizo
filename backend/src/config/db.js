@@ -9,7 +9,11 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false 
-  }
+  },
+  // Prevent "Connection terminated unexpectedly" errors by closing idle connections
+  // before Neon's proxy automatically drops them
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 });
 
 pool.on('connect', () => {
