@@ -19,7 +19,7 @@ const { requireOrganization, requireApproved } = require('./middlewares/roleMidd
 // Create Express app
 const app = express();
 
-// Trust reverse proxy (required for Render so express-rate-limit works correctly with X-Forwarded-For IPs)
+// Trust reverse proxy (required for express-rate-limit to correctly read client IPs via X-Forwarded-For)
 app.set('trust proxy', 1);
 
 // Enable CORS for frontend
